@@ -5,6 +5,8 @@
  * reach and what the engine leans on for every frame it plans.
  */
 
+import { clamp, lerp } from "@play-ui/utils";
+
 /** Where a card is and how it looks, as the engine animates it. */
 export interface Pose {
   /** Horizontal offset from the card's resting place, in px. */
@@ -40,14 +42,6 @@ export interface DepthGeometry {
   readonly depthSpread?: number;
   /** The card's height, in px: the drop is worked out from it. */
   readonly cardHeight: number;
-}
-
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-export function lerp(from: number, to: number, t: number): number {
-  return from + (to - from) * t;
 }
 
 export function lerpPose(from: Pose, to: Pose, t: number): Pose {

@@ -1,6 +1,7 @@
+import { clamp, prefersReducedMotion, type ReducedMotion } from "@play-ui/utils";
+
 import type { VerticalDragEvent } from "./engine.ts";
 import {
-  clamp,
   releaseDirection,
   releaseVelocity,
   resist,
@@ -31,7 +32,7 @@ export interface SlideshowOptions {
   /** The settle onto a slide. */
   spring: Spring;
   /** Whether to animate, given the viewer's `prefers-reduced-motion`. */
-  reducedMotion: "system" | "always" | "never";
+  reducedMotion: ReducedMotion;
 }
 
 export const DEFAULT_SLIDESHOW_OPTIONS: Readonly<SlideshowOptions> = {
@@ -328,14 +329,7 @@ export class SlideshowEngine {
   }
 
   #reduced(): boolean {
-    const mode = this.#host?.options().reducedMotion ?? "system";
-
-    if (mode === "always") return true;
-    if (mode === "never") return false;
-
-    return (
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    );
+    return prefersReducedMotion(this.#host?.options().reducedMotion);
   }
 }
 

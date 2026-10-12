@@ -40,6 +40,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@play-ui/utils": "workspace:*"
+  },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
     "@types/react": "^19.3.0",

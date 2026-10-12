@@ -109,7 +109,7 @@ export type {
   CardStackSwipeDetails,
 } from "./react/root.tsx";
 
-export type { RenderProp, StateClassName } from "./react/render.ts";
+export type { RenderProp, StateClassName } from "@play-ui/utils";
 
 export {
   DEFAULT_CARD_STACK_OPTIONS,

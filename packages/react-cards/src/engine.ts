@@ -1,3 +1,5 @@
+import { clamp, lerp, prefersReducedMotion } from "@play-ui/utils";
+
 import {
   DEFAULT_CARD_STACK_OPTIONS,
   type CardStackOptions,
@@ -5,11 +7,9 @@ import {
   type SwipeEffect,
 } from "./options.ts";
 import {
-  clamp,
   cyclePath,
   dragProgress,
   halfSpan,
-  lerp,
   liftedPose,
   poseTransform,
   releaseDirection,
@@ -1190,13 +1190,6 @@ export class CardStackEngine {
   }
 
   #reduced(): boolean {
-    const { reducedMotion } = this.#host.options();
-
-    if (reducedMotion === "always") return true;
-    if (reducedMotion === "never") return false;
-
-    return (
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    );
+    return prefersReducedMotion(this.#host.options().reducedMotion);
   }
 }

@@ -3,6 +3,8 @@
  * was tuned to. Flat on purpose: a playground control or an override is one key.
  */
 
+import type { ReducedMotion } from "@play-ui/utils";
+
 export type SwipeDirection = "left" | "right";
 
 /**
@@ -21,8 +23,7 @@ export const DEFAULT_SWIPE_EFFECTS: SwipeEffects = { left: "cycle", right: "dism
 /** How a dragged card tilts. */
 export type TiltMode = "grab" | "fixed" | "none";
 
-/** Whether to animate, given the viewer's `prefers-reduced-motion`. */
-export type ReducedMotion = "system" | "always" | "never";
+export type { ReducedMotion };
 
 export interface CardStackOptions {
   // The pile.

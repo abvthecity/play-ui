@@ -1,0 +1,54 @@
+{
+  "name": "@play-ui/utils",
+  "version": "0.1.0",
+  "description": "The small, shared helpers behind play-ui's components: prop merging, render props, reduced motion and easing math.",
+  "keywords": [
+    "headless",
+    "motion",
+    "react",
+    "render-prop",
+    "utilities"
+  ],
+  "homepage": "https://github.com/abvthecity/play-ui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abvthecity/play-ui.git",
+    "directory": "packages/utils"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@types/react": "^19.3.0",
+    "publint": "^0.3.25",
+    "react": "^19.3.0",
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { renderPart, type PartProps } from "@play-ui/utils";
 import {
   useImperativeHandle,
   useLayoutEffect,
@@ -24,7 +25,6 @@ import {
 } from "../options.ts";
 import { cycleKey, dismissKey, pruneDismissed, reconcileOrder } from "../stack.ts";
 import { RootContext, type RootContextValue } from "./context.ts";
-import { renderPart, type PartProps } from "./render.ts";
 
 export interface CardStackSwipeDetails<Item> {
   readonly item: Item;

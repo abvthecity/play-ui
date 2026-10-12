@@ -1,0 +1,63 @@
+---
+title: Helpers
+description: The small pieces every play-ui component is built from, for building parts of your own.
+---
+
+`@play-ui/utils` holds what the components share: how a part renders and merges its props, whether
+to animate, and the math motion is made of. The components already depend on it; reach for it
+directly when you build a part of your own that should behave like theirs.
+
+```tsx
+import { renderPart, type PartProps } from "@play-ui/utils";
+
+interface BadgeState {
+  active: boolean;
+}
+
+function Badge(props: PartProps<BadgeState> & { active: boolean; children?: ReactNode }) {
+  const { active, className, render, ...rest } = props;
+  const state = { active };
+
+  return renderPart(
+    "span",
+    state,
+    { className, render },
+    { "data-active": active || undefined },
+    rest,
+  );
+}
+
+<Badge
+  active
+  className={(state) => (state.active ? "on" : "off")}
+  render={<button type="button" />}
+/>;
+```
+
+## Rendering parts
+
+`renderPart(tag, state, part, own, consumer)` renders `tag`, or whatever the part's `render` prop
+asks for, with the part's own props merged under the consumer's. `className` may be a string or a
+function of the state.
+
+`render` takes an element, whose props are merged in as well, or a function handed the merged props
+and the state that returns the element to draw.
+
+`mergeProps(own, consumer)` is the merge on its own:
+
+- Event handlers chain, the consumer's first. Calling `preventDefault()` in yours skips the part's,
+  the escape hatch for a key the part would otherwise act on.
+- Styles merge, the consumer's winning.
+- Refs merge with `mergeRefs`, which keeps React 19's ref cleanup semantics.
+- An `undefined` prop is dropped, so an absent `data-*` attribute stays absent.
+
+## Reduced motion
+
+`prefersReducedMotion(mode)` says whether to cut the motion. `mode` is the `reducedMotion` option
+every component takes: `"always"`, `"never"`, or `"system"` (the default) to follow the viewer's
+`prefers-reduced-motion`. On the server it answers `false`.
+
+## Math
+
+`clamp(value, min, max)` holds a value between two bounds. `lerp(from, to, t)` is the point `t` of
+the way from `from` to `to`.

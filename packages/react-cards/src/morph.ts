@@ -15,7 +15,7 @@
  * plays, so put it on an element nothing else moves.
  */
 
-import type { ReducedMotion } from "./options.ts";
+import { prefersReducedMotion, type ReducedMotion } from "@play-ui/utils";
 
 export const MORPH_KEY_ATTRIBUTE = "data-morph-key";
 
@@ -131,17 +131,6 @@ export function captureMorph(root: ParentNode): MorphSnapshot {
   }
 
   return { boxes, ghosts };
-}
-
-function prefersReducedMotion(mode: ReducedMotion): boolean {
-  if (mode === "always") return true;
-  if (mode === "never") return false;
-
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
 }
 
 /** A running morph: `finished` settles when every element has landed or it was cancelled. */

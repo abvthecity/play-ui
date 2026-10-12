@@ -25,14 +25,15 @@ export interface PartProps<State> {
   render?: RenderProp<State> | undefined;
 }
 
-type Props = Record<string, unknown>;
+/** Any element's props. */
+export type Props = Record<string, unknown>;
 
 /**
  * Every ref in one callback, with React 19's cleanup semantics: a callback
  * that returns a cleanup gets it run on detach, one that does not is called
  * with null, and an object ref has its `current` cleared.
  */
-function mergeRefs(...refs: unknown[]): RefCallback<unknown> {
+export function mergeRefs(...refs: unknown[]): RefCallback<unknown> {
   return (value) => {
     const cleanups = refs.map((ref): (() => void) => {
       if (typeof ref === "function") {
@@ -66,7 +67,7 @@ function mergeRefs(...refs: unknown[]): RefCallback<unknown> {
  * would otherwise act on. Styles merge with the consumer's winning; refs merge.
  * An `undefined` own prop is dropped, so an absent `data-*` stays absent.
  */
-function mergeProps(own: Props, consumer: Props): Props {
+export function mergeProps(own: Props, consumer: Props): Props {
   const merged: Props = {};
 
   for (const [key, value] of Object.entries(own)) {

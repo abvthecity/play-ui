@@ -1,5 +1,6 @@
 "use client";
 
+import { renderPart, type PartProps } from "@play-ui/utils";
 import {
   useCallback,
   useContext,
@@ -13,7 +14,6 @@ import {
 import type { VerticalDragEvent } from "../engine.ts";
 import type { SwipeDirection, SwipeEffect } from "../options.ts";
 import { itemsAs, RootContext, SlotContext, useRootContext, useSlotContext } from "./context.ts";
-import { renderPart, type PartProps } from "./render.ts";
 
 // -----------------------------------------------------------------------------
 // Stage
