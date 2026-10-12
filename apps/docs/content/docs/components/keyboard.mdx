@@ -10,10 +10,12 @@ description: A drawn keyboard that lights the keys a shortcut presses, on the la
 Point at a shortcut, or search for one, and the board lights the keys it presses. Type in the search
 field and the keys light as they go down. Switch the layout or the platform and the same shortcut
 lands on different caps: `@` is shift and 2 on a US board but shift and the quote on a British PC,
-and `⌘` becomes ctrl on a PC.
+and `Mod+K` is ⌘K on a Mac but ctrl K on a PC.
 
-The package owns the board as data, which caps a printed shortcut presses, and the state for a
-searchable sheet of shortcuts. What any of it looks like is yours.
+The package owns the board as data, which caps a shortcut presses, and the state for a searchable
+sheet of shortcuts. Shortcuts are written as [TanStack Hotkeys](https://tanstack.com/hotkeys/latest)
+writes them, and parsed by it, so the hotkey you bind with `useHotkey` is the one the board lights.
+Listening for keys is TanStack's; what any of it looks like is yours.
 
 ## Anatomy
 
@@ -22,7 +24,7 @@ import { Keyboard, createBoard, mac, qwertyUS, triggerOf } from "@play-ui/react-
 
 const board = createBoard(qwertyUS, mac);
 
-<Keyboard board={board} trigger={triggerOf(board, ["⌘", "K"])} className="keyboard" />;
+<Keyboard board={board} trigger={triggerOf(board, "Mod+K")} className="keyboard" />;
 ```
 
 A board is a **layout** drawn for a **platform**. Both are plugins: plain objects, each in its own
@@ -43,58 +45,81 @@ without shift.
 ## Platforms
 
 A platform owns the machine around the characters: the function row, the modifier row, the words
-printed on the named keys, and what the modifier tokens press.
+printed on the named keys, and which platform TanStack reads its hotkeys for (`platform.hotkeys`).
 
-| Export | Description                                                                                                                   |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `mac`  | A Mac laptop: blank function keys, then fn, control, option and command. Prints `delete` and `return`.                        |
-| `pc`   | A Windows or Linux laptop: printed F-keys, then ctrl, fn, the Windows key and alt. `⌘` and `mod` press ctrl; `win` presses ⊞. |
+| Export | Description                                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `mac`  | A Mac laptop: blank function keys, then fn, control, option and command. Prints `delete` and `return`. `Mod` holds command.      |
+| `pc`   | A Windows or Linux laptop: printed F-keys, then ctrl, fn, the Windows key and alt. `Mod` holds ctrl, and `Meta` the Windows key. |
 
 On a British or international PC, the right alt is alt gr: it types accents rather than holding alt,
-so an `alt` shortcut lights only the left one.
+so an `Alt` shortcut lights only the left one.
 
 To pick a platform for the reader, test `navigator.userAgent` (or `navigator.userAgentData.platform`)
 after mount, and fall back to one when rendering on the server.
 
 ## Triggers
 
-A shortcut is printed as tokens, one cap each: `["⌘", "K"]`, `["g", "i"]`, `["1", "…", "6"]`. The
-tokens alone cannot say whether they are held together or typed in turn, so you say which, from the
-binding you listen with.
+A trigger is what a shortcut presses on a board. Write the shortcut as a TanStack hotkey: a string
+is a chord, held together; a `sequence` is typed one key after the other, as `useHotkeySequence`
+takes it; and `any` is any one of a run.
 
 ```ts
-triggerOf(board, ["⌘", "K"]); // a chord: held together
-triggerOf(board, ["g", "i"], { sequence: true }); // typed one after the other
-triggerOf(board, ["1", "…", "6"]); // any one of a run
+triggerOf(board, "Mod+K"); // a chord: held together
+triggerOf(board, { sequence: ["G", "I"] }); // typed one after the other
+triggerOf(board, { any: ["1", "2", "3", "4", "5", "6"] }); // any one of a run
 ```
 
-- A modifier lights every cap that holds it: `⇧` lights both shifts.
-- A character typed with shift brings shift along, wherever the layout puts it: `?` is shift and `/`.
-- `home`, `end`, `pageup` and `pagedown` are fn with an arrow, as on a laptop.
-- Tokens the board has no cap for are listed in `trigger.unknown`.
+TanStack parses each hotkey for the board's platform, so it reads its aliases (`Cmd`, `Option`,
+`esc`, `return`) and its physical codes (`[KeyK]`) the same way it does when it listens.
 
-Each cap's id is the `KeyboardEvent.code` of the key at that spot, so real key presses light the
-board too. `chordOf(codes)` turns the codes held right now into a trigger:
+- A modifier lights every cap that holds it: `Shift` lights both shifts.
+- A character typed with shift brings shift along, wherever the layout puts it: `?` is shift and `/`.
+- `Home`, `End`, `PageUp` and `PageDown` are fn with an arrow, and `Delete` is fn with backspace, as
+  on a laptop.
+- Hotkeys whose key the board has no cap for are listed in `trigger.unknown`.
+
+Bind and light from one list, so they never drift apart:
 
 ```tsx
-const [held, setHeld] = useState(new Set<string>());
+import { useHotkey } from "@tanstack/react-hotkeys";
 
-<input
-  onKeyDown={(event) => setHeld((keys) => new Set(keys).add(event.code))}
-  onKeyUp={() => setHeld(new Set())}
-/>
-<Keyboard board={board} trigger={held.size > 0 ? chordOf(held) : null} />;
+useHotkey("Mod+K", openPalette);
+<Keyboard board={board} trigger={triggerOf(board, "Mod+K")} />;
+```
+
+Each cap's id is the `KeyboardEvent.code` of the key at that spot, so real key presses light the
+board too. TanStack's `useHeldKeyCodes` tracks the keys held right now (and lets go of the ones a Mac
+never sends a key-up for while command is down), and `chordOf(codes)` turns them into a trigger:
+
+```tsx
+import { useHeldKeyCodes } from "@tanstack/react-hotkeys";
+
+const held = Object.values(useHeldKeyCodes());
+
+<Keyboard board={board} trigger={held.length > 0 ? chordOf(held) : null} />;
 ```
 
 ## Shortcut sheet
 
-`useShortcutSheet(groups)` holds the state for a searchable list of shortcuts: the query, the groups
+`useShortcutSheet(groups, { platform })` holds the state for a searchable list of shortcuts: the query, the groups
 it leaves, and the active row. The active row is the one pointed at, or arrowed to from the search
 field, or the first result while there is a query. Light the board from it:
 
 ```tsx
-const sheet = useShortcutSheet(groups);
-const trigger = sheet.active ? triggerOf(board, sheet.active.keys) : null;
+const groups = [
+  {
+    id: "around",
+    title: "Get around",
+    items: [
+      { id: "palette", label: "Search and commands", hotkey: "Mod+K" },
+      { id: "inbox", label: "Go to the inbox", hotkey: { sequence: ["G", "I"] } },
+    ],
+  },
+];
+
+const sheet = useShortcutSheet(groups, { platform: board.hotkeys });
+const trigger = sheet.active ? triggerOf(board, sheet.active.hotkey) : null;
 
 <input
   value={sheet.query}
@@ -106,6 +131,9 @@ const trigger = sheet.active ? triggerOf(board, sheet.active.keys) : null;
     group.items.map((item) => (
       <li key={item.id} data-shortcut-id={item.id} onPointerEnter={() => sheet.point(item.id)}>
         {item.label}
+        {hotkeysOf(item.hotkey).map((hotkey) => (
+          <kbd key={hotkey}>{formatForDisplay(hotkey, { platform: board.hotkeys })}</kbd>
+        ))}
       </li>
     )),
   )}
@@ -113,9 +141,13 @@ const trigger = sheet.active ? triggerOf(board, sheet.active.keys) : null;
 <Keyboard board={board} trigger={trigger} />;
 ```
 
-Every word of a query must land in a label, a group's title or on a key, and `cmd`, `shift` and
-`enter` are read as their glyphs. `searchShortcuts(groups, query)` is the same search as a pure
-function.
+Print each hotkey with TanStack's `formatForDisplay`: `⌘ K` on a Mac and `Ctrl+K` on a PC, from
+the same `Mod+K`. `hotkeysOf(binding)` lists the hotkeys a chord, sequence or run is made of.
+
+Every word of a query must land in a label, a group's title or on a key. A key word is read as
+TanStack reads it for the platform, so `cmd k` finds `Mod+K` on a Mac and `ctrl k` finds it on a PC,
+and a printed glyph (`⌘`, `↵`) lands too. `searchShortcuts(groups, query, platform)` is the same
+search as a pure function.
 
 ## Styling
 
@@ -222,17 +254,21 @@ Renders a `div` of rows. Accepts `className` (a string, or a function of the sta
 
 ### createBoard
 
-`createBoard(layout, platform)` returns a `Board`: `{ layout, platform, rows, tokens }`, where
-`tokens` maps every token the board knows to the caps it presses.
+`createBoard(layout, platform)` returns a `Board`: `{ layout, platform, hotkeys, rows, keys,
+modifiers }`. `keys` maps every key the board has, by TanStack's key name (`K`, `Enter`, `?`) and by
+code in brackets (`[KeyK]`), to the caps it presses; `modifiers` lists the caps holding each
+modifier.
 
 ### triggerOf
 
-`triggerOf(board, tokens, { sequence })` returns `{ kind, steps, unknown }`. `capsForToken(board,
-token)` is the same lookup for one token, and `litCaps(trigger)` maps each lit cap to its step.
+`triggerOf(board, binding)` returns `{ kind, steps, unknown }`, where a binding is a hotkey string,
+`{ sequence }` or `{ any }`. `capsForHotkey(board, hotkey)` is the same lookup for one hotkey, and
+`litCaps(trigger)` maps each lit cap to its step.
 
 ### Your own layout or platform
 
 A layout is `{ id, name, rows(platform), overrides? }`, where `rows` returns the four rows of
-characters for a platform id. A platform is `{ id, name, functionRow, modifierRow, legends, tokens }`.
+characters for a platform id. A platform is `{ id, name, functionRow, modifierRow, legends, hotkeys }`,
+where `hotkeys` is `"mac"`, `"windows"` or `"linux"`, the platform TanStack resolves `Mod` for.
 Build their caps with `cap`, `charCap` and `letterCaps`, and keep every row at 14.5 units
 (`rowWidth` adds one up).

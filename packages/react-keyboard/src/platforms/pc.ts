@@ -5,9 +5,9 @@ import { cap } from "../cap.ts";
  * A Windows or Linux laptop: printed F-keys, then ctrl, fn, the Windows key
  * and alt, with ctrl again on the right.
  *
- * `ctrl` and `mod` press ctrl, and so does `⌘`, so a shortcut printed for a
- * Mac lights what a PC holds for it. `win`, `super` and `meta` press the
- * Windows key.
+ * Hotkeys are read as TanStack reads them on Windows: `Mod` holds ctrl, so a
+ * `Mod+K` written once lights ⌘K on a Mac and ctrl K here, and `Meta` holds
+ * the Windows key.
  */
 export const pc: KeyboardPlatform = {
   id: "pc",
@@ -36,21 +36,5 @@ export const pc: KeyboardPlatform = {
     Backspace: { legend: "backspace" },
     Enter: { legend: "enter" },
   },
-  tokens: {
-    "⌘": "control",
-    cmd: "control",
-    command: "control",
-    mod: "control",
-    "⌃": "control",
-    ctrl: "control",
-    control: "control",
-    "⊞": "meta",
-    win: "meta",
-    super: "meta",
-    meta: "meta",
-    "⌥": "alt",
-    alt: "alt",
-    opt: "alt",
-    option: "alt",
-  },
+  hotkeys: "windows",
 };

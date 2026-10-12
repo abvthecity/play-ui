@@ -3,16 +3,30 @@
  *
  * Every word of the query has to land somewhere: in the label, in the group's
  * title, or on one of the keys. So `select` finds the selection group, `add
- * space` finds "Add to a space", `g` finds every `g` chord and every label with
- * a g in it, and `cmd k` finds ⌘K. Nothing is ranked: a sheet of thirty rows
- * reads better in its own order than in a score's.
+ * space` finds "Add to a space", `g` finds every `G` binding and every label
+ * with a g in it, and `cmd k` finds `Mod+K` on a Mac. A word lands on a key
+ * the way TanStack Hotkeys reads it (`cmd`, `option`, `esc`, `return` are
+ * its aliases) or as TanStack prints it (`⌘`, `↵`, `Ctrl`). Nothing is
+ * ranked: a sheet of thirty rows reads better in its own order than in a
+ * score's.
  */
 
-/** What a searchable row needs: a name, and the tokens printed for it. */
+import {
+  MODIFIER_ALIASES,
+  formatForDisplay,
+  normalizeKeyName,
+  parseHotkey,
+  resolveModifier,
+} from "@tanstack/hotkeys";
+
+import type { HotkeyPlatform } from "./board.ts";
+import type { Binding, HotkeyString } from "./trigger.ts";
+
+/** What a searchable row needs: a name, and the binding it presses. */
 export interface ShortcutEntry {
   readonly id: string;
   readonly label: string;
-  readonly keys: readonly string[];
+  readonly hotkey: Binding;
 }
 
 export interface ShortcutGroup<Entry extends ShortcutEntry = ShortcutEntry> {
@@ -21,35 +35,39 @@ export interface ShortcutGroup<Entry extends ShortcutEntry = ShortcutEntry> {
   readonly items: readonly Entry[];
 }
 
-/** The names people type for the caps that print as a glyph. */
-const KEY_WORDS: Readonly<Record<string, string>> = {
-  cmd: "⌘",
-  command: "⌘",
-  meta: "⌘",
-  shift: "⇧",
-  alt: "⌥",
-  opt: "⌥",
-  option: "⌥",
-  ctrl: "⌃",
-  control: "⌃",
-  enter: "↵",
-  return: "↵",
-  escape: "esc",
-  up: "↑↓",
-  down: "↑↓",
-  arrows: "↑↓",
-};
+/** Every hotkey a binding is made of, in order. */
+export function hotkeysOf(binding: Binding): readonly HotkeyString[] {
+  if (typeof binding === "string") return [binding];
 
-function onKeys(word: string, keys: readonly string[]): boolean {
-  const token = KEY_WORDS[word] ?? word;
-
-  return keys.some((key) => key.toLowerCase() === token || (token === "↑↓" && key === "↑↓"));
+  return "any" in binding ? binding.any : binding.sequence;
 }
 
-/** The groups with only the rows every word of `query` lands on, and no empty groups. */
+function onKeys(word: string, binding: Binding, platform: HotkeyPlatform | undefined): boolean {
+  const alias = MODIFIER_ALIASES[word];
+  const modifier = alias ? resolveModifier(alias, platform) : null;
+  const key = normalizeKeyName(word).toLowerCase();
+
+  return hotkeysOf(binding).some((hotkey) => {
+    const parsed = parseHotkey(hotkey, platform);
+
+    if (modifier) return parsed.modifiers.includes(modifier);
+    if ((parsed.code ?? parsed.key).toLowerCase() === key) return true;
+
+    return formatForDisplay(parsed, { platform, parts: true }).some(
+      (part) => part.toLowerCase() === word,
+    );
+  });
+}
+
+/**
+ * The groups with only the rows every word of `query` lands on, and no empty
+ * groups. `platform` is the one the keys are read for (TanStack detects it
+ * when it is left out), so `cmd` finds `Mod` on a Mac and `ctrl` does on a PC.
+ */
 export function searchShortcuts<Entry extends ShortcutEntry>(
   groups: readonly ShortcutGroup<Entry>[],
   query: string,
+  platform?: HotkeyPlatform,
 ): ShortcutGroup<Entry>[] {
   const words = query.toLowerCase().split(/\s+/u).filter(Boolean);
 
@@ -62,7 +80,8 @@ export function searchShortcuts<Entry extends ShortcutEntry>(
         const label = item.label.toLowerCase();
 
         return words.every(
-          (word) => label.includes(word) || title.includes(word) || onKeys(word, item.keys),
+          (word) =>
+            label.includes(word) || title.includes(word) || onKeys(word, item.hotkey, platform),
         );
       });
 

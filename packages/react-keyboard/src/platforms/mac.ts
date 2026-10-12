@@ -5,8 +5,7 @@ import { cap } from "../cap.ts";
  * A Mac laptop: blank function keys, fn at the corner, then control, option
  * and command, and the words Apple prints (`delete`, `return`).
  *
- * `⌘`, `cmd` and `mod` press command; a binding written for a PC's ctrl
- * still presses control.
+ * Hotkeys are read as TanStack reads them on a Mac: `Mod` holds command.
  */
 export const mac: KeyboardPlatform = {
   id: "mac",
@@ -35,19 +34,5 @@ export const mac: KeyboardPlatform = {
     Backspace: { legend: "delete" },
     Enter: { legend: "return" },
   },
-  tokens: {
-    "⌘": "meta",
-    cmd: "meta",
-    command: "meta",
-    meta: "meta",
-    mod: "meta",
-    "⌃": "control",
-    ctrl: "control",
-    control: "control",
-    "⌥": "alt",
-    alt: "alt",
-    opt: "alt",
-    option: "alt",
-    delete: ["Backspace"],
-  },
+  hotkeys: "mac",
 };

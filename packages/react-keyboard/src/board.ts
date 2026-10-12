@@ -5,13 +5,15 @@
  * bundle carries only the ones it imports. A layout owns the four rows of
  * characters (where the keys are and what they type); a platform owns the
  * function row, the modifier row and the words printed on the named keys.
- * `createBoard` puts them together and works out, once, which caps every
- * printed token presses.
+ * `createBoard` puts them together and works out, once, which caps every key
+ * presses, by the key names TanStack Hotkeys parses a hotkey string into.
  *
  * Every row of a board adds up to the same 14.5 units, so the drawing is a
  * stack of flex rows with `flex-grow` set to each cap's width and nothing else
  * to align.
  */
+
+import { normalizeKeyName } from "@tanstack/hotkeys";
 
 import { keyCaps, type KeyCap, type KeyRow, type KeyRowItem, type Modifier } from "./cap.ts";
 
@@ -44,11 +46,14 @@ export interface KeyboardPlatform {
   /** What the platform prints on the layout's named keys, by cap id: `Enter` as "return". */
   readonly legends: Readonly<Record<string, Partial<KeyCap>>>;
   /**
-   * What a printed token presses here: a modifier, meaning every cap that
-   * holds it, or cap ids. This is where `⌘` becomes ctrl on a PC.
+   * The platform TanStack Hotkeys reads a hotkey for: it decides what `Mod`
+   * holds (command on `mac`, ctrl on `windows` and `linux`).
    */
-  readonly tokens: Readonly<Record<string, Modifier | readonly string[]>>;
+  readonly hotkeys: HotkeyPlatform;
 }
+
+/** A platform as TanStack Hotkeys names it. */
+export type HotkeyPlatform = "mac" | "windows" | "linux";
 
 /** A layout drawn for a platform, ready for `Keyboard` and `triggerOf`. */
 export interface Board {
@@ -56,47 +61,42 @@ export interface Board {
   readonly layout: string;
   /** The platform's id. */
   readonly platform: string;
+  /** The platform TanStack Hotkeys reads this board's hotkeys for. */
+  readonly hotkeys: HotkeyPlatform;
   /** Six rows, function row first. */
   readonly rows: readonly KeyRow[];
-  /** Every token the board knows and the caps it presses, holding shift where it must. */
-  readonly tokens: ReadonlyMap<string, readonly string[]>;
+  /**
+   * Every key the board has and the caps it presses, holding shift where it
+   * must, by TanStack's key name (`K`, `Enter`, `?`) and by physical code in
+   * brackets (`[KeyK]`).
+   */
+  readonly keys: ReadonlyMap<string, readonly string[]>;
+  /** The caps that hold each modifier: both shifts, both commands. */
+  readonly modifiers: Readonly<Record<Modifier, readonly string[]>>;
 }
 
-/** The tokens every board reads the same way. */
-const NAMED: Readonly<Record<string, Modifier | readonly string[]>> = {
-  "⇧": "shift",
-  shift: "shift",
-  esc: ["Escape"],
-  escape: ["Escape"],
-  "↵": ["Enter"],
-  enter: ["Enter"],
-  return: ["Enter"],
-  "⇥": ["Tab"],
-  tab: ["Tab"],
-  space: ["Space"],
-  "␣": ["Space"],
-  "⌫": ["Backspace"],
-  backspace: ["Backspace"],
-  "⇪": ["CapsLock"],
-  caps: ["CapsLock"],
-  capslock: ["CapsLock"],
-  fn: ["Fn"],
-  "↑": ["ArrowUp"],
-  "↓": ["ArrowDown"],
-  "←": ["ArrowLeft"],
-  "→": ["ArrowRight"],
-  up: ["ArrowUp"],
-  down: ["ArrowDown"],
-  left: ["ArrowLeft"],
-  right: ["ArrowRight"],
-  "↑↓": ["ArrowUp", "ArrowDown"],
-  // A laptop has no Home, End or page keys: they are fn with an arrow.
-  home: ["Fn", "ArrowLeft"],
-  end: ["Fn", "ArrowRight"],
-  pageup: ["Fn", "ArrowUp"],
-  pagedown: ["Fn", "ArrowDown"],
+/** The named keys, by TanStack's key name, where every board has them. */
+const NAMED: Readonly<Record<string, readonly string[]>> = {
+  Escape: ["Escape"],
+  Enter: ["Enter"],
+  Tab: ["Tab"],
+  Space: ["Space"],
+  Backspace: ["Backspace"],
+  CapsLock: ["CapsLock"],
+  Fn: ["Fn"],
+  ArrowUp: ["ArrowUp"],
+  ArrowDown: ["ArrowDown"],
+  ArrowLeft: ["ArrowLeft"],
+  ArrowRight: ["ArrowRight"],
+  // A laptop has no Home, End, page or forward-delete keys: they are fn with
+  // another key.
+  Home: ["Fn", "ArrowLeft"],
+  End: ["Fn", "ArrowRight"],
+  PageUp: ["Fn", "ArrowUp"],
+  PageDown: ["Fn", "ArrowDown"],
+  Delete: ["Fn", "Backspace"],
   ...Object.fromEntries(
-    Array.from({ length: 12 }, (_, index) => [`f${String(index + 1)}`, [`F${String(index + 1)}`]]),
+    Array.from({ length: 12 }, (_, index) => [`F${String(index + 1)}`, [`F${String(index + 1)}`]]),
   ),
 };
 
@@ -124,24 +124,36 @@ export function createBoard(layout: KeyboardLayout, platform: KeyboardPlatform):
   const holding = (modifier: Modifier): string[] => [
     ...new Set(caps.filter((each) => each.modifier === modifier).map((each) => each.id)),
   ];
+  const modifiers = {
+    shift: holding("shift"),
+    control: holding("control"),
+    alt: holding("alt"),
+    meta: holding("meta"),
+  };
 
-  const tokens = new Map<string, readonly string[]>();
+  const keys = new Map<string, readonly string[]>();
 
-  function add(token: string, target: Modifier | readonly string[]): void {
-    if (tokens.has(token)) return;
+  function add(key: string, ids: readonly string[]): void {
+    if (keys.has(key) || !ids.every((id) => present.has(id))) return;
 
-    const ids =
-      typeof target === "string" ? holding(target) : target.filter((id) => present.has(id));
-
-    if (ids.length > 0) tokens.set(token, ids);
+    keys.set(key, ids);
   }
 
-  // The platform's words first, then the shared ones, then what the caps type:
-  // a character typed without shift wins over the same one typed with it.
-  for (const [token, target] of Object.entries(platform.tokens)) add(token, target);
-  for (const [token, target] of Object.entries(NAMED)) add(token, target);
-  for (const each of caps) if (each.char) add(each.char, [each.id]);
-  for (const each of caps) if (each.shifted) add(each.shifted, [...holding("shift"), each.id]);
+  // The named keys first, then what the caps type: a character typed without
+  // shift wins over the same one typed with it. Then every cap by its code.
+  for (const [key, ids] of Object.entries(NAMED)) add(key, ids);
+  for (const each of caps) if (each.char) add(normalizeKeyName(each.char), [each.id]);
+  for (const each of caps) {
+    if (each.shifted) add(normalizeKeyName(each.shifted), [...modifiers.shift, each.id]);
+  }
+  for (const id of present) add(`[${id}]`, [id]);
 
-  return { layout: layout.id, platform: platform.id, rows, tokens };
+  return {
+    layout: layout.id,
+    platform: platform.id,
+    hotkeys: platform.hotkeys,
+    rows,
+    keys,
+    modifiers,
+  };
 }

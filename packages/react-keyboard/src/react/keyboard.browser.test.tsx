@@ -21,7 +21,7 @@ describe("Keyboard", () => {
 
   it("lights a chord's caps", async () => {
     const screen = await render(
-      <Keyboard board={board} trigger={triggerOf(board, ["⌘", "K"])} data-testid="board" />,
+      <Keyboard board={board} trigger={triggerOf(board, "Mod+K")} data-testid="board" />,
     );
     const root = screen.getByTestId("board").element();
     const lit = [...root.querySelectorAll<HTMLElement>("[data-lit]")].map(
@@ -34,7 +34,7 @@ describe("Keyboard", () => {
   });
 
   it("numbers a sequence's steps", async () => {
-    const trigger = triggerOf(board, ["g", "i"], { sequence: true });
+    const trigger = triggerOf(board, { sequence: ["G", "I"] });
     const screen = await render(<Keyboard board={board} trigger={trigger} data-testid="board" />);
     const root = screen.getByTestId("board").element();
 
@@ -45,7 +45,7 @@ describe("Keyboard", () => {
   it("draws a two-row return as one cap with its outline over both rows", async () => {
     const uk = createBoard(qwertyUK, pc);
     const screen = await render(
-      <Keyboard board={uk} trigger={triggerOf(uk, ["↵"])} data-testid="board" />,
+      <Keyboard board={uk} trigger={triggerOf(uk, "Enter")} data-testid="board" />,
     );
     const root = screen.getByTestId("board").element();
     const caps = root.querySelectorAll('[data-part="cap"][data-key="Enter"]');
@@ -72,7 +72,7 @@ describe("Keyboard", () => {
     const screen = await render(
       <Keyboard
         board={board}
-        trigger={triggerOf(board, ["?"])}
+        trigger={triggerOf(board, "?")}
         className={(state) => `board ${state.kind ?? "rest"} ${state.platform}`}
         data-testid="board"
       />,

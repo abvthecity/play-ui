@@ -1,14 +1,27 @@
 /**
- * What a shortcut's printed keys press on a board.
+ * What a hotkey presses on a board.
  *
- * A shortcut is printed as tokens, one cap each (`["⌘", "K"]`, `["g", "i"]`,
- * `["1", "…", "6"]`), and the tokens alone cannot say whether they are held
- * together or typed one after the other: `⇧ J` is a chord and `g i` is a
- * sequence, and both are two letters. So the caller says which, from the
- * binding it actually listens with, and this file only reads the board.
+ * A shortcut is written as TanStack Hotkeys writes it, so the string that
+ * binds it with `useHotkey` is the one that lights it: `"Mod+K"` is a chord,
+ * `{ sequence: ["G", "I"] }` is typed one key after the other (as
+ * `useHotkeySequence` takes it), and `{ any: ["1", "2", "3"] }` is any one of
+ * a run. TanStack parses each hotkey for the board's platform, so `Mod`
+ * holds command on a Mac and ctrl on a PC, and this file only finds the caps.
  */
 
+import { parseHotkey, type CanonicalModifier, type Hotkey } from "@tanstack/hotkeys";
+
 import type { Board } from "./board.ts";
+import type { Modifier } from "./cap.ts";
+
+/** One hotkey string, with TanStack's autocomplete: `"Mod+Shift+Z"`, `"?"`, `"[KeyK]"`. */
+export type HotkeyString = Hotkey | (string & {});
+
+/** What a shortcut presses: a chord, a sequence, or any one of a run. */
+export type Binding =
+  | HotkeyString
+  | { readonly sequence: readonly HotkeyString[] }
+  | { readonly any: readonly HotkeyString[] };
 
 /**
  * How the keys go down: all at once, one after the other, or any one of a run
@@ -20,79 +33,66 @@ export interface Trigger {
   readonly kind: TriggerKind;
   /**
    * The caps each step presses, by `KeyCap.id`. A chord or a run is one step;
-   * a sequence is one step per token, in order.
+   * a sequence is one step per hotkey, in order.
    */
   readonly steps: readonly (readonly string[])[];
-  /** Tokens the board has no cap for, so a caller can see what it dropped. */
+  /** Hotkeys whose key the board has no cap for, so a caller can see what it dropped. */
   readonly unknown: readonly string[];
 }
 
-const RANGE = "…";
-
 /**
- * The caps one token presses on `board`, or `null` when it has none for it.
- * A character typed with shift brings shift along: `?` is shift and `/`, and
- * `@` is shift and 2 on a US board but shift and the quote on a British PC.
+ * The caps one hotkey holds on `board`, or `null` when the board has no cap
+ * for its key. A character typed with shift brings shift along: `?` is shift
+ * and `/`, and `@` is shift and 2 on a US board but shift and the quote on a
+ * British PC.
  */
-export function capsForToken(board: Board, token: string): readonly string[] | null {
-  return board.tokens.get(token) ?? board.tokens.get(token.toLowerCase()) ?? null;
+export function capsForHotkey(board: Board, hotkey: HotkeyString): readonly string[] | null {
+  const parsed = parseHotkey(hotkey, board.hotkeys);
+  const key = board.keys.get(parsed.code === undefined ? parsed.key : `[${parsed.code}]`);
+
+  if (!key) return null;
+
+  const held = parsed.modifiers.flatMap((modifier) => board.modifiers[MODIFIERS[modifier]]);
+
+  return [...new Set([...held, ...key])];
 }
 
-/** Every digit from `from` to `to`, for a printed run like `1 … 6`. */
-function digitRun(from: string, to: string): string[] | null {
-  const start = Number(from);
-  const end = Number(to);
+/** The board's name for each of TanStack's modifiers. */
+const MODIFIERS: Readonly<Record<CanonicalModifier, Modifier>> = {
+  Control: "control",
+  Shift: "shift",
+  Alt: "alt",
+  Meta: "meta",
+};
 
-  if (!/^\d$/u.test(from) || !/^\d$/u.test(to) || end < start) return null;
-
-  return Array.from({ length: end - start + 1 }, (_, index) => String(start + index));
-}
-
-/**
- * The trigger for a shortcut's printed tokens on `board`.
- *
- * `sequence` is the caller's to say: pass `true` for a binding that is typed
- * one key after another (tinykeys writes those with a space, `"g i"`). A run
- * (`1 … 6`) is recognised from its ellipsis and is always `any`.
- */
-export function triggerOf(
-  board: Board,
-  tokens: readonly string[],
-  options: { sequence?: boolean | undefined } = {},
-): Trigger {
+/** The trigger for a shortcut's binding on `board`. */
+export function triggerOf(board: Board, binding: Binding): Trigger {
   const unknown: string[] = [];
-  const at = tokens.indexOf(RANGE);
 
-  if (at > 0 && at < tokens.length - 1) {
-    const run = digitRun(tokens[at - 1] ?? "", tokens[at + 1] ?? "");
+  function press(hotkey: HotkeyString): readonly string[] {
+    const caps = capsForHotkey(board, hotkey);
 
-    if (run) {
-      return {
-        kind: "any",
-        steps: [run.flatMap((digit) => capsForToken(board, digit) ?? [])],
-        unknown,
-      };
-    }
-  }
-
-  const resolved = tokens.map((token) => {
-    const caps = capsForToken(board, token);
-
-    if (!caps) unknown.push(token);
+    if (!caps) unknown.push(hotkey);
 
     return caps ?? [];
-  });
-
-  if (options.sequence && tokens.length > 1) {
-    return { kind: "sequence", steps: resolved.filter((caps) => caps.length > 0), unknown };
   }
 
-  return { kind: "chord", steps: [[...new Set(resolved.flat())]], unknown };
+  if (typeof binding === "string") return { kind: "chord", steps: [press(binding)], unknown };
+
+  if ("any" in binding) {
+    return { kind: "any", steps: [[...new Set(binding.any.flatMap(press))]], unknown };
+  }
+
+  const steps = binding.sequence.map(press);
+
+  if (steps.length === 1) return { kind: "chord", steps, unknown };
+
+  return { kind: "sequence", steps: steps.filter((caps) => caps.length > 0), unknown };
 }
 
 /**
  * A chord of the caps held down right now, by `KeyboardEvent.code`, for a
- * board that follows real key presses.
+ * board that follows real key presses (`useHeldKeyCodes` gives them).
  */
 export function chordOf(codes: Iterable<string>): Trigger {
   return { kind: "chord", steps: [[...new Set(codes)]], unknown: [] };

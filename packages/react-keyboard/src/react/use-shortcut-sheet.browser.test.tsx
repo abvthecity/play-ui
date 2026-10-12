@@ -10,8 +10,8 @@ const GROUPS: ShortcutGroup[] = [
     id: "move",
     title: "Move",
     items: [
-      { id: "next", label: "Next link", keys: ["j"] },
-      { id: "previous", label: "Previous link", keys: ["k"] },
+      { id: "next", label: "Next link", hotkey: "J" },
+      { id: "previous", label: "Previous link", hotkey: "K" },
     ],
   },
 ];

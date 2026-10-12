@@ -10,6 +10,7 @@ import {
   type RefCallback,
 } from "react";
 
+import type { HotkeyPlatform } from "../board.ts";
 import { searchShortcuts, type ShortcutEntry, type ShortcutGroup } from "../search.ts";
 
 export interface ShortcutSheet<Entry extends ShortcutEntry> {
@@ -33,10 +34,14 @@ export interface ShortcutSheet<Entry extends ShortcutEntry> {
  * With a query and nothing pointed at, the first result is active, so typing
  * `pin` lights `p` without another key. Rows are found in the list by
  * `data-shortcut-id`, which is the one attribute the caller has to set.
+ * `platform` is the one the query's key words are read for, as in
+ * `searchShortcuts`.
  */
 export function useShortcutSheet<Entry extends ShortcutEntry>(
   groups: readonly ShortcutGroup<Entry>[],
+  options: { platform?: HotkeyPlatform | undefined } = {},
 ): ShortcutSheet<Entry> {
+  const { platform } = options;
   const [query, setQueryState] = useState("");
   const [pointed, setPointed] = useState<string | null>(null);
   const [arrowed, setArrowed] = useState(false);
@@ -45,7 +50,10 @@ export function useShortcutSheet<Entry extends ShortcutEntry>(
     list.current = node;
   }, []);
 
-  const results = useMemo(() => searchShortcuts(groups, query), [groups, query]);
+  const results = useMemo(
+    () => searchShortcuts(groups, query, platform),
+    [groups, query, platform],
+  );
   const flat = useMemo(() => results.flatMap((group) => group.items), [results]);
 
   const active =
