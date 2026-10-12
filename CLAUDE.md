@@ -14,3 +14,11 @@ private build tooling in `tools/*` (`tools/tsdown-config` holds the shared tsdow
   `.test.ts` and runs in Node.
 - Tests never ship: tsdown builds only what `src/index.ts` reaches, and `files` publishes
   only `dist`.
+
+## Releases
+
+- Changesets drives versioning: a change to a published package ships with a changeset
+  (`pnpm changeset`). Private packages (`tools/*`, `apps/docs`) are never versioned or published.
+- `.github/workflows/release.yml` opens a "Version Packages" PR from pending changesets and,
+  once it merges, publishes to npm through trusted publishing (OIDC) with provenance. Publishing
+  runs only while the `NPM_PUBLISH` repository variable is `true`.

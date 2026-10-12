@@ -12,9 +12,14 @@
     "lint:fix": "oxlint --fix",
     "prepare": "husky",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish",
+    "version-packages": "changeset version && oxfmt --write ."
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@stylistic/eslint-plugin": "^5.10.0",
