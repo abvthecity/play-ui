@@ -370,6 +370,8 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
+  /* The face sits above the depth band, so its legend centres there: up by half the depth. */
+  padding-bottom: var(--cap-depth);
   overflow: hidden;
   border-radius: clamp(3px, 1.1cqi, 8px);
   background: color-mix(in oklab, var(--ink) 4%, transparent);
