@@ -1,24 +1,46 @@
 import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { mergeProps, mergeRefs, renderPart } from "./render.ts";
+import { mergeRefs, renderPart } from "./render.ts";
 
-describe("mergeProps", () => {
-  it("lays the consumer's props over the part's own, dropping undefined", () => {
-    expect(
-      mergeProps({ id: "own", "data-x": undefined }, { id: "consumer", title: undefined }),
-    ).toEqual({ id: "consumer" });
+/** The props `renderPart` hands a render function, given the part's and the consumer's. */
+function merged(own: Record<string, unknown>, consumer: Record<string, unknown>) {
+  let props: Record<string, unknown> = {};
+
+  renderPart(
+    "div",
+    null,
+    {
+      render: (next) => {
+        props = next;
+
+        return createElement("div");
+      },
+    },
+    own,
+    consumer,
+  );
+
+  return props;
+}
+
+describe("merging props", () => {
+  it("lays the consumer's props over the part's own", () => {
+    expect(merged({ id: "own", role: "group" }, { id: "consumer" })).toEqual({
+      id: "consumer",
+      role: "group",
+    });
   });
 
   it("merges styles with the consumer's winning", () => {
     expect(
-      mergeProps({ style: { color: "red", left: 0 } }, { style: { color: "blue" } }).style,
+      merged({ style: { color: "red", left: 0 } }, { style: { color: "blue" } })["style"],
     ).toEqual({ color: "blue", left: 0 });
   });
 
   it("chains handlers, consumer first, and skips the part's on preventDefault", () => {
     const calls: string[] = [];
-    const { onClick } = mergeProps(
+    const { onClick } = merged(
       { onClick: () => calls.push("own") },
       {
         onClick: (event: { defaultPrevented: boolean }) => {
@@ -29,10 +51,23 @@ describe("mergeProps", () => {
 
     if (typeof onClick !== "function") throw new Error("expected a handler");
 
-    Reflect.apply(onClick, undefined, [{ defaultPrevented: false }]);
-    Reflect.apply(onClick, undefined, [{ defaultPrevented: true }]);
+    Reflect.apply(onClick, undefined, [{ nativeEvent: {}, defaultPrevented: false }]);
+    Reflect.apply(onClick, undefined, [{ nativeEvent: {}, defaultPrevented: true }]);
 
     expect(calls).toEqual(["consumer", "own", "consumer, prevented"]);
+  });
+
+  it("merges refs", () => {
+    const own: { current: unknown } = { current: null };
+    const consumer: { current: unknown } = { current: null };
+    const { ref } = merged({ ref: own }, { ref: consumer });
+
+    if (typeof ref !== "function") throw new Error("expected a merged ref");
+
+    ref("node");
+
+    expect(own.current).toBe("node");
+    expect(consumer.current).toBe("node");
   });
 });
 

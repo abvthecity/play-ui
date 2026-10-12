@@ -39,6 +39,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0"
+  },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
     "@play-ui/tsdown-config": "workspace:*",

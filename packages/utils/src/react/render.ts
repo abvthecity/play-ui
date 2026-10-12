@@ -1,5 +1,6 @@
 "use client";
 
+import { mergeProps as mergeElementProps } from "@base-ui/react/merge-props";
 import {
   cloneElement,
   createElement,
@@ -60,45 +61,46 @@ export function mergeRefs(...refs: unknown[]): RefCallback<unknown> {
 }
 
 /**
- * The part's own props under the consumer's.
- *
- * Handlers chain with the consumer's first, and the part's own is skipped when
- * the consumer called `preventDefault()` — the escape hatch for a key the part
- * would otherwise act on. Styles merge with the consumer's winning; refs merge.
- * An `undefined` own prop is dropped, so an absent `data-*` stays absent.
+ * The consumer's handlers, each telling the merge to skip the part's own when
+ * it called `preventDefault()` — the escape hatch for a key the part would
+ * otherwise act on.
  */
-export function mergeProps(own: Props, consumer: Props): Props {
-  const merged: Props = {};
+function preventable(consumer: Props): Props {
+  const wrapped: Props = { ...consumer };
 
-  for (const [key, value] of Object.entries(own)) {
-    if (value !== undefined) merged[key] = value;
+  for (const [key, handler] of Object.entries(consumer)) {
+    if (!/^on[A-Z]/u.test(key) || typeof handler !== "function") continue;
+
+    wrapped[key] = (event: unknown, ...rest: unknown[]): unknown => {
+      const result: unknown = Reflect.apply(handler, undefined, [event, ...rest]);
+
+      if (
+        typeof event === "object" &&
+        event !== null &&
+        "defaultPrevented" in event &&
+        event.defaultPrevented === true &&
+        "preventBaseUIHandler" in event &&
+        typeof event.preventBaseUIHandler === "function"
+      ) {
+        Reflect.apply(event.preventBaseUIHandler, event, []);
+      }
+
+      return result;
+    };
   }
 
-  for (const [key, value] of Object.entries(consumer)) {
-    if (value === undefined) continue;
+  return wrapped;
+}
 
-    const existing = merged[key];
+/**
+ * The part's own props under the consumer's: handlers chain with the
+ * consumer's first, classes join, styles merge with the consumer's winning,
+ * and refs merge.
+ */
+function mergePartProps(own: Props, consumer: Props): Props {
+  const merged: Props = mergeElementProps<"div">(own, preventable(consumer));
 
-    if (/^on[A-Z]/u.test(key) && typeof existing === "function" && typeof value === "function") {
-      merged[key] = (event: unknown, ...rest: unknown[]): void => {
-        Reflect.apply(value, undefined, [event, ...rest]);
-
-        const prevented =
-          typeof event === "object" &&
-          event !== null &&
-          "defaultPrevented" in event &&
-          event.defaultPrevented === true;
-
-        if (!prevented) Reflect.apply(existing, undefined, [event, ...rest]);
-      };
-    } else if (key === "style" && typeof existing === "object" && typeof value === "object") {
-      merged[key] = { ...existing, ...value };
-    } else if (key === "ref" && existing) {
-      merged[key] = mergeRefs(existing, value);
-    } else {
-      merged[key] = value;
-    }
-  }
+  if (own["ref"] && consumer["ref"]) merged["ref"] = mergeRefs(own["ref"], consumer["ref"]);
 
   return merged;
 }
@@ -112,12 +114,13 @@ export function renderPart<State>(
   consumer: Props,
 ): ReactElement {
   const className = typeof part.className === "function" ? part.className(state) : part.className;
-  const props = mergeProps(own, { ...consumer, className });
+  const props = mergePartProps(own, { ...consumer, className });
   const { render } = part;
 
   if (typeof render === "function") return render(props, state);
 
-  if (isValidElement<Props>(render)) return cloneElement(render, mergeProps(props, render.props));
+  if (isValidElement<Props>(render))
+    return cloneElement(render, mergePartProps(props, render.props));
 
   return createElement(tag, props);
 }

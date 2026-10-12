@@ -11,7 +11,6 @@ export { clamp, lerp } from "./math.ts";
 export { prefersReducedMotion, type ReducedMotion } from "./reduced-motion.ts";
 
 export {
-  mergeProps,
   mergeRefs,
   renderPart,
   type PartProps,

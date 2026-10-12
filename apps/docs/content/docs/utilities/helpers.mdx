@@ -43,13 +43,13 @@ function of the state.
 `render` takes an element, whose props are merged in as well, or a function handed the merged props
 and the state that returns the element to draw.
 
-`mergeProps(own, consumer)` is the merge on its own:
+The props merge like this:
 
 - Event handlers chain, the consumer's first. Calling `preventDefault()` in yours skips the part's,
   the escape hatch for a key the part would otherwise act on.
-- Styles merge, the consumer's winning.
+- Class names join, and styles merge with the consumer's winning.
 - Refs merge with `mergeRefs`, which keeps React 19's ref cleanup semantics.
-- An `undefined` prop is dropped, so an absent `data-*` attribute stays absent.
+- Any other prop the consumer passes wins over the part's own.
 
 ## Reduced motion
 
