@@ -1,5 +1,6 @@
 "use client";
 
+import { releaseVelocity, springTiming, type PointerSample, type Spring } from "@play-ui/physics";
 import {
   useEffect,
   useLayoutEffect,
@@ -12,7 +13,6 @@ import {
 } from "react";
 
 import { dockAt, releasePlace, stepPlace, tuckedSide, untuck, type DockPlace } from "../dock.ts";
-import { releaseVelocity, springTiming, type PointerSample, type Spring } from "../physics.ts";
 
 export interface UseDockOptions<E extends HTMLElement = HTMLElement> {
   /** Where the element rests now. The hook never moves it there; the consumer's layout does. */

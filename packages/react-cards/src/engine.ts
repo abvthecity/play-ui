@@ -1,3 +1,15 @@
+import {
+  cyclePath,
+  dragProgress,
+  halfSpan,
+  releaseDirection,
+  releaseVelocity,
+  resist,
+  springTiming,
+  tiltFactor,
+  type CyclePath,
+  type PointerSample,
+} from "@play-ui/physics";
 import { clamp, lerp, prefersReducedMotion } from "@play-ui/utils";
 
 import {
@@ -6,23 +18,7 @@ import {
   type SwipeDirection,
   type SwipeEffect,
 } from "./options.ts";
-import {
-  cyclePath,
-  dragProgress,
-  halfSpan,
-  liftedPose,
-  poseTransform,
-  releaseDirection,
-  releaseVelocity,
-  resist,
-  restPose,
-  springTiming,
-  tiltFactor,
-  type CyclePath,
-  type DepthGeometry,
-  type PointerSample,
-  type Pose,
-} from "./physics.ts";
+import { liftedPose, poseTransform, restPose, type DepthGeometry, type Pose } from "./pose.ts";
 
 /** A vertical drag on the stage, handed to whoever owns the surface around it. */
 export interface VerticalDragEvent {

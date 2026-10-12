@@ -41,6 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@play-ui/physics": "workspace:*",
     "@play-ui/utils": "workspace:*"
   },
   "devDependencies": {

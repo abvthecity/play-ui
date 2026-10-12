@@ -126,25 +126,13 @@ export {
 export { CardStackEngine, type CardStackHost, type VerticalDragEvent } from "./engine.ts";
 
 export {
-  cyclePath,
-  dragProgress,
-  halfSpan,
   liftedPose,
   lerpPose,
   poseTransform,
-  releaseDirection,
-  releaseVelocity,
-  resist,
   restPose,
-  springTiming,
-  tiltFactor,
-  type CyclePath,
   type DepthGeometry,
-  type PointerSample,
   type Pose,
-  type Spring,
-  type SpringTiming,
-} from "./physics.ts";
+} from "./pose.ts";
 
 export { cycleKey, dismissKey, pruneDismissed, reconcileOrder } from "./stack.ts";
 

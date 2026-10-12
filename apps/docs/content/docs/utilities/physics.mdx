@@ -1,0 +1,59 @@
+---
+title: Physics
+description: The motion math under every component, as pure functions you can use on their own.
+---
+
+`@play-ui/physics` is how the components move: springs played by the Web Animations API, the speed a
+pointer let go at, what a release means, and the path a thrown element takes out and home. Every
+export is a pure function of numbers, with no DOM in it, so it runs anywhere and tests without a
+browser.
+
+```ts
+import { releaseDirection, releaseVelocity, springTiming } from "@play-ui/physics";
+
+const velocity = releaseVelocity(samples);
+const direction = releaseDirection(dx, velocity.x, width, 0.32, 0.5);
+
+if (direction === 0) {
+  const { duration, easing } = springTiming({ stiffness: 520, damping: 34, mass: 0.7 });
+
+  element.animate([{ transform: `translateX(${dx}px)` }, { transform: "none" }], {
+    duration,
+    easing,
+  });
+}
+```
+
+## Springs
+
+`springTiming(spring, samples?)` turns a damped spring into a Web Animations timing: `duration` is
+how long it takes to come to rest, within a hundredth of the distance, and `easing` is a CSS
+`linear()` that traces its displacement. The last sample is pinned to 1, so nothing lands short.
+Timings are cached by their parameters.
+
+A `Spring` is `{ stiffness, damping, mass }`, the same unit-free shape Motion takes.
+
+## Gestures
+
+| Function                                                    | Returns                                                                                                 |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `releaseVelocity(samples, window?)`                         | The pointer's `{ x, y }` velocity over the last `window` ms (90 by default), in px/ms.                  |
+| `dragProgress(dx, width, threshold)`                        | How far toward the threshold a drag is, as a fraction of `width`: 1 and above is armed.                 |
+| `releaseDirection(dx, vx, width, threshold, flingVelocity)` | `1` or `-1` to commit a swipe that way, `0` to spring back. Pulling back on the way out cancels it.     |
+| `resist(x, exponent?)`                                      | Travel past where an element may go, damped so it moves reluctantly.                                    |
+| `tiltFactor(grabY, height, floor?)`                         | Which way, from -1 to 1, a dragged element leans from where it was grabbed; never flatter than `floor`. |
+
+`PointerSample` is `{ t, x, y }`: push one on every `pointermove` and hand the list to
+`releaseVelocity` on `pointerup`.
+
+## Paths
+
+`cyclePath(x0, v0, clear, maxOutMs, spring)` is the trip a thrown element takes out past `clear` and
+back home to 0, one sample per millisecond. Out is a cubic that leaves at the release speed and
+arrives with none left; home is `spring` from that standstill. The two meet at zero velocity, so the
+turn has no seam. It returns the `points`, the `apex` it turns at and the millisecond `apexAt`.
+
+## Geometry
+
+`halfSpan(width, height, rotation)` is half the width a box covers once turned `rotation` degrees,
+for working out when a tilted element has cleared an edge.

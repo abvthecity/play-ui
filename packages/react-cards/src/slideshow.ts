@@ -1,6 +1,3 @@
-import { clamp, prefersReducedMotion, type ReducedMotion } from "@play-ui/utils";
-
-import type { VerticalDragEvent } from "./engine.ts";
 import {
   releaseDirection,
   releaseVelocity,
@@ -8,7 +5,10 @@ import {
   springTiming,
   type PointerSample,
   type Spring,
-} from "./physics.ts";
+} from "@play-ui/physics";
+import { clamp, prefersReducedMotion, type ReducedMotion } from "@play-ui/utils";
+
+import type { VerticalDragEvent } from "./engine.ts";
 
 /**
  * A row of slides the finger pulls along: the stack's gesture and physics, laid

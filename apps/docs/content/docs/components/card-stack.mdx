@@ -227,5 +227,5 @@ Pass any of these to `options`; the rest keep their defaults (`DEFAULT_CARD_STAC
 Only two cards are real DOM. `CardStackEngine` (framework-free, and exported) plays a swipe on the
 elements with the Web Animations API, then the root changes the order: the content moves between the
 elements and the engine puts them back where they rest in the same frame, so nothing jumps. The
-physics (`cyclePath`, `releaseDirection`, `springTiming` and friends) and the ordering
-(`reconcileOrder`, `cycleKey`, `dismissKey`) are pure functions, exported too.
+geometry (`restPose`, `liftedPose`) and the ordering (`reconcileOrder`, `cycleKey`, `dismissKey`) are
+pure functions, exported too; the motion math under them is [`@play-ui/physics`](/docs/utilities/physics).
