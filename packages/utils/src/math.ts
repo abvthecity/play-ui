@@ -1,5 +1,12 @@
-/** `value`, held between `min` and `max`. */
-export function clamp(value: number, min: number, max: number): number {
+/**
+ * `value`, held between `min` and `max`. A bound left out is the furthest safe
+ * integer on that side.
+ */
+export function clamp(
+  value: number,
+  min: number = Number.MIN_SAFE_INTEGER,
+  max: number = Number.MAX_SAFE_INTEGER,
+): number {
   return Math.min(max, Math.max(min, value));
 }
 

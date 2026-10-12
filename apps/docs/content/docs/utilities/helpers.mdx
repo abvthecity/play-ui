@@ -59,5 +59,6 @@ every component takes: `"always"`, `"never"`, or `"system"` (the default) to fol
 
 ## Math
 
-`clamp(value, min, max)` holds a value between two bounds. `lerp(from, to, t)` is the point `t` of
+`clamp(value, min?, max?)` holds a value between two bounds; a bound left out is
+`Number.MIN_SAFE_INTEGER` or `Number.MAX_SAFE_INTEGER`. `lerp(from, to, t)` is the point `t` of
 the way from `from` to `to`.
