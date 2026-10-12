@@ -1,7 +1,7 @@
 # play-ui
 
 A pnpm + Turborepo monorepo: packages in `packages/*`, the docs site in `apps/docs`, and
-private build tooling in `tools/*` (`tools/tsdown-config` holds the shared tsdown config).
+private build tooling in `tools/*` (`tools/tsdown-config` and `tools/vitest-config` hold the shared tsdown and Vitest configs).
 `pnpm check` runs lint, format check, typecheck, tests and build; run it before pushing.
 
 ## Tests
@@ -12,6 +12,9 @@ private build tooling in `tools/*` (`tools/tsdown-config` holds the shared tsdow
   whole imports `../index.ts`.
 - Browser tests (Vitest browser mode) end in `.browser.test.tsx`; everything else ends in
   `.test.ts` and runs in Node.
+- Every package's `vitest.config.ts` calls `defineTestConfig()` from `@play-ui/vitest-config`;
+  a package with browser tests passes `{ browser: true }`. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE`
+  to run them against a local Chromium.
 - Tests never ship: tsdown builds only what `src/index.ts` reaches, and `files` publishes
   only `dist`.
 

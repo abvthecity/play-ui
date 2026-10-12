@@ -20,6 +20,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium for the browser tests
-        run: pnpm --filter @play-ui/react-cards exec playwright install --with-deps chromium
+        run: pnpm --filter @play-ui/vitest-config exec playwright install --with-deps chromium
       # Lint, format, typecheck, test (node and browser) and build, as `pnpm check` runs locally.
       - run: pnpm check

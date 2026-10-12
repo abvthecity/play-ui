@@ -45,6 +45,7 @@
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
     "@play-ui/tsdown-config": "workspace:*",
+    "@play-ui/vitest-config": "workspace:*",
     "publint": "^0.3.25",
     "tsdown": "^0.23.1",
     "typescript": "^7.0.2",

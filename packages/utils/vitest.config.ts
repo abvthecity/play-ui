@@ -1,10 +1,6 @@
-import { defineConfig, type ViteUserConfig } from "vitest/config";
+import { defineTestConfig } from "@play-ui/vitest-config";
+import type { ViteUserConfig } from "vitest/config";
 
-const config: ViteUserConfig = defineConfig({
-  test: {
-    environment: "node",
-    include: ["src/**/*.test.ts"],
-  },
-});
+const config: ViteUserConfig = defineTestConfig();
 
 export default config;

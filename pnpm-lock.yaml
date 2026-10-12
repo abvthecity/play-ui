@@ -270,6 +270,9 @@ importers:
       '@play-ui/tsdown-config':
         specifier: workspace:*
         version: link:../../tools/tsdown-config
+      '@play-ui/vitest-config':
+        specifier: workspace:*
+        version: link:../../tools/vitest-config
       publint:
         specifier: ^0.3.25
         version: 0.3.25
@@ -298,18 +301,15 @@ importers:
       '@play-ui/tsdown-config':
         specifier: workspace:*
         version: link:../../tools/tsdown-config
+      '@play-ui/vitest-config':
+        specifier: workspace:*
+        version: link:../../tools/vitest-config
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      '@vitest/browser-playwright':
-        specifier: ^5.0.3
-        version: 5.0.3(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.6.1)(yaml@2.9.1))(vitest@5.0.3)
-      playwright:
-        specifier: ^1.64.0
-        version: 1.64.0
       publint:
         specifier: ^0.3.25
         version: 0.3.25
@@ -344,18 +344,15 @@ importers:
       '@play-ui/tsdown-config':
         specifier: workspace:*
         version: link:../../tools/tsdown-config
+      '@play-ui/vitest-config':
+        specifier: workspace:*
+        version: link:../../tools/vitest-config
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      '@vitest/browser-playwright':
-        specifier: ^5.0.3
-        version: 5.0.3(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.6.1)(yaml@2.9.1))(vitest@5.0.3)
-      playwright:
-        specifier: ^1.64.0
-        version: 1.64.0
       publint:
         specifier: ^0.3.25
         version: 0.3.25
@@ -390,6 +387,9 @@ importers:
       '@play-ui/tsdown-config':
         specifier: workspace:*
         version: link:../../tools/tsdown-config
+      '@play-ui/vitest-config':
+        specifier: workspace:*
+        version: link:../../tools/vitest-config
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -417,6 +417,25 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+
+  tools/vitest-config:
+    dependencies:
+      '@vitest/browser-playwright':
+        specifier: ^5.0.3
+        version: 5.0.3(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.6.1)(yaml@2.9.1))(vitest@5.0.3)
+      playwright:
+        specifier: ^1.64.0
+        version: 1.64.0
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.0
+        version: 24.19.2
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@24.19.2)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.6.1)(yaml@2.9.1))
 
 packages:
 
