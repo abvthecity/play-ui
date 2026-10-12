@@ -169,6 +169,16 @@ button {
   cursor: pointer;
 }
 
+/*
+ * Everything below the header is its own stacking context, so nothing inside
+ * it (a dragged card, a z-indexed demo, the mobile menu) can paint over the
+ * header, whatever z-index it sets.
+ */
+.docs-body,
+.hero {
+  isolation: isolate;
+}
+
 /* Docs layout: sidebar, article, table of contents */
 
 .docs-body {
