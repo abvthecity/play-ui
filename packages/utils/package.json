@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
+    "@play-ui/tsdown-config": "workspace:*",
     "@types/react": "^19.3.0",
     "publint": "^0.3.25",
     "react": "^19.3.0",

@@ -1,0 +1,21 @@
+{
+  "name": "@play-ui/tsdown-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The tsdown config every play-ui package builds with.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "tsdown": "^0.23.1"
+  }
+}

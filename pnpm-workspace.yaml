@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - tools/*
 engineStrict: true
 allowBuilds:
   esbuild: true

@@ -1,6 +1,7 @@
 # play-ui
 
-A pnpm + Turborepo monorepo: packages in `packages/*`, the docs site in `apps/docs`.
+A pnpm + Turborepo monorepo: packages in `packages/*`, the docs site in `apps/docs`, and
+private build tooling in `tools/*` (`tools/tsdown-config` holds the shared tsdown config).
 `pnpm check` runs lint, format check, typecheck, tests and build; run it before pushing.
 
 ## Tests
