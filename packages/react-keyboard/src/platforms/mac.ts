@@ -19,12 +19,12 @@ export const mac: KeyboardPlatform = {
   ],
   modifierRow: [
     cap("Fn", "fn"),
-    cap("ControlLeft", "⌃", 1, { sub: "control", modifier: "control" }),
-    cap("AltLeft", "⌥", 1, { sub: "option", modifier: "alt" }),
-    cap("MetaLeft", "⌘", 1.25, { sub: "command", modifier: "meta" }),
+    cap("ControlLeft", "⌃", 1, { modifier: "control" }),
+    cap("AltLeft", "⌥", 1, { modifier: "alt" }),
+    cap("MetaLeft", "⌘", 1.25, { modifier: "meta" }),
     cap("Space", "", 5),
-    cap("MetaRight", "⌘", 1.25, { sub: "command", modifier: "meta" }),
-    cap("AltRight", "⌥", 1, { sub: "option", modifier: "alt" }),
+    cap("MetaRight", "⌘", 1.25, { modifier: "meta" }),
+    cap("AltRight", "⌥", 1, { modifier: "alt" }),
     cap("ArrowLeft", "←"),
     {
       stack: [cap("ArrowUp", "↑", 1, { half: true }), cap("ArrowDown", "↓", 1, { half: true })],
@@ -33,7 +33,7 @@ export const mac: KeyboardPlatform = {
   ],
   legends: {
     Backspace: { legend: "delete" },
-    Enter: { legend: "↵", sub: "return" },
+    Enter: { legend: "return" },
   },
   tokens: {
     "⌘": "meta",

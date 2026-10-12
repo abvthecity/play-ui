@@ -21,7 +21,7 @@ export const pc: KeyboardPlatform = {
   modifierRow: [
     cap("ControlLeft", "ctrl", 1, { modifier: "control" }),
     cap("Fn", "fn"),
-    cap("MetaLeft", "⊞", 1, { sub: "win", modifier: "meta" }),
+    cap("MetaLeft", "⊞", 1, { modifier: "meta" }),
     cap("AltLeft", "alt", 1.25, { modifier: "alt" }),
     cap("Space", "", 5),
     cap("AltRight", "alt", 1.25, { modifier: "alt" }),
@@ -33,8 +33,8 @@ export const pc: KeyboardPlatform = {
     cap("ArrowRight", "→"),
   ],
   legends: {
-    Backspace: { legend: "⌫", sub: "backspace" },
-    Enter: { legend: "↵", sub: "enter" },
+    Backspace: { legend: "backspace" },
+    Enter: { legend: "enter" },
   },
   tokens: {
     "⌘": "control",

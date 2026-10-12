@@ -68,7 +68,7 @@ export function qwertyRows(shape: Shape, symbols: SymbolTable): readonly KeyRow[
     ...DIGITS.map(key),
     key("Minus"),
     key("Equal"),
-    cap("Backspace", "⌫", 1.5),
+    cap("Backspace", "backspace", 1.5),
   ];
 
   if (shape === "ansi") {
@@ -86,15 +86,15 @@ export function qwertyRows(shape: Shape, symbols: SymbolTable): readonly KeyRow[
         ...letterCaps("asdfghjkl"),
         key("Semicolon"),
         key("Quote"),
-        cap("Enter", "↵", 1.75),
+        cap("Enter", "enter", 1.75),
       ],
       [
-        cap("ShiftLeft", "⇧", 2.25, { sub: "shift", modifier: "shift" }),
+        cap("ShiftLeft", "shift", 2.25, { modifier: "shift" }),
         ...letterCaps("zxcvbnm"),
         key("Comma"),
         key("Period"),
         key("Slash"),
-        cap("ShiftRight", "⇧", 2.25, { sub: "shift", modifier: "shift" }),
+        cap("ShiftRight", "shift", 2.25, { modifier: "shift" }),
       ],
     ];
   }
@@ -106,7 +106,7 @@ export function qwertyRows(shape: Shape, symbols: SymbolTable): readonly KeyRow[
       ...letterCaps("qwertyuiop"),
       key("BracketLeft"),
       key("BracketRight"),
-      cap("Enter", "↵", 1, { span: "upper" }),
+      cap("Enter", "enter", 1, { span: "upper" }),
     ],
     [
       cap("CapsLock", "caps", 1.75),
@@ -117,13 +117,13 @@ export function qwertyRows(shape: Shape, symbols: SymbolTable): readonly KeyRow[
       cap("Enter", "", 0.75, { span: "lower" }),
     ],
     [
-      cap("ShiftLeft", "⇧", 1.25, { sub: "shift", modifier: "shift" }),
+      cap("ShiftLeft", "shift", 1.25, { modifier: "shift" }),
       key("IntlBackslash"),
       ...letterCaps("zxcvbnm"),
       key("Comma"),
       key("Period"),
       key("Slash"),
-      cap("ShiftRight", "⇧", 2.25, { sub: "shift", modifier: "shift" }),
+      cap("ShiftRight", "shift", 2.25, { modifier: "shift" }),
     ],
   ];
 }

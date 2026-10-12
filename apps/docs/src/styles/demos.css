@@ -352,6 +352,12 @@
   border-top-right-radius: 0;
 }
 
+/* The long words on the short caps: backspace, and the ISO return's top half. */
+.kb-board[data-platform="pc"] [data-key="Backspace"] [data-part="legend"],
+.kb-board [data-span="upper"] [data-part="legend"] {
+  font-size: 0.72em;
+}
+
 .kb-board [data-part="shifted"],
 .kb-board [data-part="sub"] {
   font-size: 0.72em;

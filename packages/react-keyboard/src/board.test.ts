@@ -39,15 +39,15 @@ describe("createBoard", () => {
 
   it("prints the platform's words on the layout's named keys", () => {
     expect(find(createBoard(qwertyUS, mac), "Backspace")?.legend).toBe("delete");
-    expect(find(createBoard(qwertyUS, pc), "Enter")?.sub).toBe("enter");
-    expect(find(createBoard(qwertyUS, mac), "Enter")?.sub).toBe("return");
+    expect(find(createBoard(qwertyUS, pc), "Enter")?.legend).toBe("enter");
+    expect(find(createBoard(qwertyUS, mac), "Enter")?.legend).toBe("return");
   });
 
   it("keeps the legend on the upper half of a two-row return", () => {
     const halves = keyCaps(createBoard(qwertyUK, mac).rows).filter((cap) => cap.id === "Enter");
 
     expect(halves.map((cap) => [cap.span, cap.legend])).toEqual([
-      ["upper", "↵"],
+      ["upper", "return"],
       ["lower", ""],
     ]);
   });
