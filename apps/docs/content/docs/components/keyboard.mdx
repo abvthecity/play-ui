@@ -1,0 +1,191 @@
+---
+title: Keyboard
+description: A drawn keyboard that lights the keys a shortcut presses, on the layout and platform you choose.
+---
+
+<Demo>
+  <KeyboardDemo />
+</Demo>
+
+Point at a shortcut, or search for one, and the board lights the keys it presses. Type in the search
+field and the keys light as they go down. Switch the layout or the platform and the same shortcut
+lands on different caps: `@` is shift and 2 on a US board but shift and the quote on a British PC,
+and `⌘` becomes ctrl on a PC.
+
+The package owns the board as data, which caps a printed shortcut presses, and the state for a
+searchable sheet of shortcuts. What any of it looks like is yours.
+
+## Anatomy
+
+```tsx
+import { Keyboard, createBoard, mac, qwertyUS, triggerOf } from "@play-ui/react-keyboard";
+
+const board = createBoard(qwertyUS, mac);
+
+<Keyboard board={board} trigger={triggerOf(board, ["⌘", "K"])} className="keyboard" />;
+```
+
+A board is a **layout** drawn for a **platform**. Both are plugins: plain objects, each in its own
+module, so your bundle keeps only the ones you import. A site that only ever draws a US Mac board
+ships neither the British nor the international layout, nor the PC platform.
+
+## Layouts
+
+A layout owns the four rows of characters: where the keys are and what each one types, with and
+without shift.
+
+| Export                | Shape | Description                                                                                              |
+| --------------------- | ----- | -------------------------------------------------------------------------------------------------------- |
+| `qwertyUS`            | ANSI  | The US board: a one-row return and a long left shift.                                                    |
+| `qwertyUK`            | ISO   | The British board: a tall return, `£` over 3 and an extra key before Z. A Mac and a PC differ in places. |
+| `qwertyInternational` | ISO   | The US symbols on the ISO shape, as English keyboards are sold across Europe.                            |
+
+## Platforms
+
+A platform owns the machine around the characters: the function row, the modifier row, the words
+printed on the named keys, and what the modifier tokens press.
+
+| Export | Description                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `mac`  | A Mac laptop: blank function keys, then fn, control, option and command. Prints `delete` and `return`.                        |
+| `pc`   | A Windows or Linux laptop: printed F-keys, then ctrl, fn, the Windows key and alt. `⌘` and `mod` press ctrl; `win` presses ⊞. |
+
+On a British or international PC, the right alt is alt gr: it types accents rather than holding alt,
+so an `alt` shortcut lights only the left one.
+
+To pick a platform for the reader, test `navigator.userAgent` (or `navigator.userAgentData.platform`)
+after mount, and fall back to one when rendering on the server.
+
+## Triggers
+
+A shortcut is printed as tokens, one cap each: `["⌘", "K"]`, `["g", "i"]`, `["1", "…", "6"]`. The
+tokens alone cannot say whether they are held together or typed in turn, so you say which, from the
+binding you listen with.
+
+```ts
+triggerOf(board, ["⌘", "K"]); // a chord: held together
+triggerOf(board, ["g", "i"], { sequence: true }); // typed one after the other
+triggerOf(board, ["1", "…", "6"]); // any one of a run
+```
+
+- A modifier lights every cap that holds it: `⇧` lights both shifts.
+- A character typed with shift brings shift along, wherever the layout puts it: `?` is shift and `/`.
+- `home`, `end`, `pageup` and `pagedown` are fn with an arrow, as on a laptop.
+- Tokens the board has no cap for are listed in `trigger.unknown`.
+
+Each cap's id is the `KeyboardEvent.code` of the key at that spot, so real key presses light the
+board too. `chordOf(codes)` turns the codes held right now into a trigger:
+
+```tsx
+const [held, setHeld] = useState(new Set<string>());
+
+<input
+  onKeyDown={(event) => setHeld((keys) => new Set(keys).add(event.code))}
+  onKeyUp={() => setHeld(new Set())}
+/>
+<Keyboard board={board} trigger={held.size > 0 ? chordOf(held) : null} />;
+```
+
+## Shortcut sheet
+
+`useShortcutSheet(groups)` holds the state for a searchable list of shortcuts: the query, the groups
+it leaves, and the active row. The active row is the one pointed at, or arrowed to from the search
+field, or the first result while there is a query. Light the board from it:
+
+```tsx
+const sheet = useShortcutSheet(groups);
+const trigger = sheet.active ? triggerOf(board, sheet.active.keys) : null;
+
+<input
+  value={sheet.query}
+  onChange={(event) => sheet.setQuery(event.target.value)}
+  onKeyDown={sheet.onInputKeyDown}
+/>
+<ul ref={sheet.attachList}>
+  {sheet.results.flatMap((group) =>
+    group.items.map((item) => (
+      <li key={item.id} data-shortcut-id={item.id} onPointerEnter={() => sheet.point(item.id)}>
+        {item.label}
+      </li>
+    )),
+  )}
+</ul>
+<Keyboard board={board} trigger={trigger} />;
+```
+
+Every word of a query must land in a label, a group's title or on a key, and `cmd`, `shift` and
+`enter` are read as their glyphs. `searchShortcuts(groups, query)` is the same search as a pure
+function.
+
+## Styling
+
+Every row of a board adds up to the same 14.5 units, so the drawing is a stack of flex rows with
+`flex-grow` set to each cap's width:
+
+```css
+.keyboard [data-part="row"] {
+  display: flex;
+  gap: 6px;
+  height: 44px;
+}
+
+.keyboard [data-part="cap"],
+.keyboard [data-part="stack"] {
+  flex: var(--cap-width) 1 0;
+}
+
+.keyboard [data-part="cap"][data-lit] {
+  background: orange;
+}
+```
+
+The ISO return is two caps with the same `data-key`, marked `data-span="upper"` and
+`data-span="lower"`; square off their touching corners and pull the lower one up by the row gap so
+they read as one tall key.
+
+## Accessibility
+
+The board is a picture of the keys a shortcut presses, never a control, so it is `aria-hidden`. The
+row it illustrates already says the same thing in words and key caps; keep that text in your sheet.
+
+## API reference
+
+### Keyboard
+
+Renders a `div` of rows. Accepts `className` (a string, or a function of the state) and `render`.
+
+| Prop      | Type              | Description                                   |
+| --------- | ----------------- | --------------------------------------------- |
+| `board`   | `Board`           | The board to draw, from `createBoard`.        |
+| `trigger` | `Trigger \| null` | What to light, or `null` for a board at rest. |
+
+| Attribute / variable          | Description                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| `data-layout`                 | The layout's id, on the root.                                                                 |
+| `data-platform`               | The platform's id, on the root.                                                               |
+| `data-kind`                   | `"chord"`, `"sequence"` or `"any"` while something is lit.                                    |
+| `data-part`                   | `"row"`, `"stack"` (↑ over ↓), `"cap"`, and inside a cap `"legend"`, `"shifted"` and `"sub"`. |
+| `data-key`                    | A cap's `KeyboardEvent.code`.                                                                 |
+| `data-lit`                    | Present on a lit cap.                                                                         |
+| `data-step`                   | A sequence's 1, 2, … on its lit caps.                                                         |
+| `data-half` / `data-blank`    | The short caps and the empty ones.                                                            |
+| `data-modifier`               | `"shift"`, `"control"`, `"alt"` or `"meta"` on a modifier.                                    |
+| `data-span`                   | `"upper"` or `"lower"` on the halves of a two-row return.                                     |
+| `--cap-width` / `--cap-index` | A cap's width in key units, and its place on the board.                                       |
+
+### createBoard
+
+`createBoard(layout, platform)` returns a `Board`: `{ layout, platform, rows, tokens }`, where
+`tokens` maps every token the board knows to the caps it presses.
+
+### triggerOf
+
+`triggerOf(board, tokens, { sequence })` returns `{ kind, steps, unknown }`. `capsForToken(board,
+token)` is the same lookup for one token, and `litCaps(trigger)` maps each lit cap to its step.
+
+### Your own layout or platform
+
+A layout is `{ id, name, rows(platform), overrides? }`, where `rows` returns the four rows of
+characters for a platform id. A platform is `{ id, name, functionRow, modifierRow, legends, tokens }`.
+Build their caps with `cap`, `charCap` and `letterCaps`, and keep every row at 14.5 units
+(`rowWidth` adds one up).

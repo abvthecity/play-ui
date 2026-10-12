@@ -7,10 +7,11 @@ look to you. Documentation lives in [`apps/docs`](apps/docs/content/docs).
 
 ## Packages
 
-| Package                                        | Description                                                          |
-| ---------------------------------------------- | -------------------------------------------------------------------- |
-| [`@play-ui/react-cards`](packages/react-cards) | A swipeable card stack and the motion around it                      |
-| [`@play-ui/physics`](packages/physics)         | The motion math under every component: springs, velocity and release |
+| Package                                              | Description                                                             |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`@play-ui/react-cards`](packages/react-cards)       | A swipeable card stack and the motion around it                         |
+| [`@play-ui/react-keyboard`](packages/react-keyboard) | A drawn keyboard that lights a shortcut's keys, per layout and platform |
+| [`@play-ui/physics`](packages/physics)               | The motion math under every component: springs, velocity and release    |
 
 ## Development
 
