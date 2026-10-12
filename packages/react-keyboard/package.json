@@ -40,8 +40,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@play-ui/utils": "workspace:*",
-    "@tanstack/hotkeys": "^0.11.0"
+    "@play-ui/utils": "workspace:*"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",

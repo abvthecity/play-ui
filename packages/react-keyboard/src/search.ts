@@ -5,22 +5,19 @@
  * title, or on one of the keys. So `select` finds the selection group, `add
  * space` finds "Add to a space", `g` finds every `G` binding and every label
  * with a g in it, and `cmd k` finds `Mod+K` on a Mac. A word lands on a key
- * the way TanStack Hotkeys reads it (`cmd`, `option`, `esc`, `return` are
- * its aliases) or as TanStack prints it (`⌘`, `↵`, `Ctrl`). Nothing is
- * ranked: a sheet of thirty rows reads better in its own order than in a
- * score's.
+ * the way a hotkey string reads it, aliases (`cmd`, `option`, `esc`,
+ * `return`) and glyphs (`⌘`, `↵`) alike. Nothing is ranked: a sheet of thirty
+ * rows reads better in its own order than in a score's.
  */
 
 import {
-  MODIFIER_ALIASES,
-  formatForDisplay,
-  normalizeKeyName,
+  keyName,
+  modifierOf,
   parseHotkey,
-  resolveModifier,
-} from "@tanstack/hotkeys";
-
-import type { HotkeyPlatform } from "./board.ts";
-import type { Binding, HotkeyString } from "./trigger.ts";
+  type HotkeyPlatform,
+  type HotkeyString,
+} from "./hotkey.ts";
+import type { Binding } from "./trigger.ts";
 
 /** What a searchable row needs: a name, and the binding it presses. */
 export interface ShortcutEntry {
@@ -42,32 +39,28 @@ export function hotkeysOf(binding: Binding): readonly HotkeyString[] {
   return "any" in binding ? binding.any : binding.sequence;
 }
 
-function onKeys(word: string, binding: Binding, platform: HotkeyPlatform | undefined): boolean {
-  const alias = MODIFIER_ALIASES[word];
-  const modifier = alias ? resolveModifier(alias, platform) : null;
-  const key = normalizeKeyName(word).toLowerCase();
+function onKeys(word: string, binding: Binding, platform: HotkeyPlatform): boolean {
+  const modifier = modifierOf(word, platform);
+  const key = keyName(word).toLowerCase();
 
   return hotkeysOf(binding).some((hotkey) => {
     const parsed = parseHotkey(hotkey, platform);
 
     if (modifier) return parsed.modifiers.includes(modifier);
-    if ((parsed.code ?? parsed.key).toLowerCase() === key) return true;
 
-    return formatForDisplay(parsed, { platform, parts: true }).some(
-      (part) => part.toLowerCase() === word,
-    );
+    return (parsed.code ?? parsed.key ?? "").toLowerCase() === key;
   });
 }
 
 /**
  * The groups with only the rows every word of `query` lands on, and no empty
- * groups. `platform` is the one the keys are read for (TanStack detects it
- * when it is left out), so `cmd` finds `Mod` on a Mac and `ctrl` does on a PC.
+ * groups. `platform` is the one the keys are read for (a Mac when it is left
+ * out), so `cmd` finds `Mod` on a Mac and `ctrl` does on a PC.
  */
 export function searchShortcuts<Entry extends ShortcutEntry>(
   groups: readonly ShortcutGroup<Entry>[],
   query: string,
-  platform?: HotkeyPlatform,
+  platform: HotkeyPlatform = "mac",
 ): ShortcutGroup<Entry>[] {
   const words = query.toLowerCase().split(/\s+/u).filter(Boolean);
 

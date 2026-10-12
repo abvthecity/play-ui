@@ -3,8 +3,9 @@
  * keys, and the state for a searchable sheet of shortcuts, headless.
  *
  * Layouts and platforms are plugins: each is its own export, so a bundle
- * keeps only the ones it imports. Shortcuts are TanStack Hotkeys strings, so
- * the hotkey you bind with `useHotkey` is the one the board lights.
+ * keeps only the ones it imports. Shortcuts are hotkey strings in the form
+ * TanStack Hotkeys uses (`"Mod+K"`), so one string can bind a shortcut there
+ * and light it here, without either depending on the other.
  *
  * ```tsx
  * import { Keyboard, createBoard, mac, qwertyUS, triggerOf } from "@play-ui/react-keyboard";
@@ -18,13 +19,7 @@ export { Keyboard, type KeyboardProps, type KeyboardState } from "./react/keyboa
 
 export { useShortcutSheet, type ShortcutSheet } from "./react/use-shortcut-sheet.ts";
 
-export {
-  createBoard,
-  type Board,
-  type HotkeyPlatform,
-  type KeyboardLayout,
-  type KeyboardPlatform,
-} from "./board.ts";
+export { createBoard, type Board, type KeyboardLayout, type KeyboardPlatform } from "./board.ts";
 
 export {
   cap,
@@ -37,6 +32,15 @@ export {
   type KeyRowItem,
   type Modifier,
 } from "./cap.ts";
+
+export {
+  keyName,
+  modifierOf,
+  parseHotkey,
+  type HotkeyPlatform,
+  type HotkeyString,
+  type ParsedHotkey,
+} from "./hotkey.ts";
 
 export { qwertyUS } from "./layouts/qwerty-us.ts";
 
@@ -54,7 +58,6 @@ export {
   litCaps,
   triggerOf,
   type Binding,
-  type HotkeyString,
   type Trigger,
   type TriggerKind,
 } from "./trigger.ts";

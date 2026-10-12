@@ -10,7 +10,7 @@ import {
   type RefCallback,
 } from "react";
 
-import type { HotkeyPlatform } from "../board.ts";
+import type { HotkeyPlatform } from "../hotkey.ts";
 import { searchShortcuts, type ShortcutEntry, type ShortcutGroup } from "../search.ts";
 
 export interface ShortcutSheet<Entry extends ShortcutEntry> {

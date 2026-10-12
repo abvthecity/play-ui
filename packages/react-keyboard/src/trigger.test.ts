@@ -48,7 +48,7 @@ describe("capsForHotkey", () => {
     expect(capsForHotkey(createBoard(qwertyInternational, pc), "`")).toEqual(["Backquote"]);
   });
 
-  it("reads TanStack's key names and aliases", () => {
+  it("reads key names and aliases", () => {
     expect(capsForHotkey(US_MAC, "Mod+Enter")).toEqual(["MetaLeft", "MetaRight", "Enter"]);
     expect(capsForHotkey(US_MAC, "esc")).toEqual(["Escape"]);
     expect(capsForHotkey(US_MAC, "Space")).toEqual(["Space"]);

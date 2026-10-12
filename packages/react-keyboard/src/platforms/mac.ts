@@ -5,7 +5,7 @@ import { cap } from "../cap.ts";
  * A Mac laptop: blank function keys, fn at the corner, then control, option
  * and command, and the words Apple prints (`delete`, `return`).
  *
- * Hotkeys are read as TanStack reads them on a Mac: `Mod` holds command.
+ * Hotkeys are read for a Mac: `Mod` holds command.
  */
 export const mac: KeyboardPlatform = {
   id: "mac",

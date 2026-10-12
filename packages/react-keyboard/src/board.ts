@@ -6,16 +6,15 @@
  * characters (where the keys are and what they type); a platform owns the
  * function row, the modifier row and the words printed on the named keys.
  * `createBoard` puts them together and works out, once, which caps every key
- * presses, by the key names TanStack Hotkeys parses a hotkey string into.
+ * presses, by the key names a hotkey string is read into.
  *
  * Every row of a board adds up to the same 14.5 units, so the drawing is a
  * stack of flex rows with `flex-grow` set to each cap's width and nothing else
  * to align.
  */
 
-import { normalizeKeyName } from "@tanstack/hotkeys";
-
 import { keyCaps, type KeyCap, type KeyRow, type KeyRowItem, type Modifier } from "./cap.ts";
+import { keyName, type HotkeyPlatform } from "./hotkey.ts";
 
 /** Where the keys are and what they type: the four rows of characters. */
 export interface KeyboardLayout {
@@ -46,14 +45,11 @@ export interface KeyboardPlatform {
   /** What the platform prints on the layout's named keys, by cap id: `Enter` as "return". */
   readonly legends: Readonly<Record<string, Partial<KeyCap>>>;
   /**
-   * The platform TanStack Hotkeys reads a hotkey for: it decides what `Mod`
-   * holds (command on `mac`, ctrl on `windows` and `linux`).
+   * The platform a hotkey is read for, named as TanStack Hotkeys names it: it
+   * decides what `Mod` holds (command on `mac`, ctrl on `windows` and `linux`).
    */
   readonly hotkeys: HotkeyPlatform;
 }
-
-/** A platform as TanStack Hotkeys names it. */
-export type HotkeyPlatform = "mac" | "windows" | "linux";
 
 /** A layout drawn for a platform, ready for `Keyboard` and `triggerOf`. */
 export interface Board {
@@ -61,13 +57,13 @@ export interface Board {
   readonly layout: string;
   /** The platform's id. */
   readonly platform: string;
-  /** The platform TanStack Hotkeys reads this board's hotkeys for. */
+  /** The platform this board's hotkeys are read for. */
   readonly hotkeys: HotkeyPlatform;
   /** Six rows, function row first. */
   readonly rows: readonly KeyRow[];
   /**
    * Every key the board has and the caps it presses, holding shift where it
-   * must, by TanStack's key name (`K`, `Enter`, `?`) and by physical code in
+   * must, by key name (`K`, `Enter`, `?`) and by physical code in
    * brackets (`[KeyK]`).
    */
   readonly keys: ReadonlyMap<string, readonly string[]>;
@@ -75,7 +71,7 @@ export interface Board {
   readonly modifiers: Readonly<Record<Modifier, readonly string[]>>;
 }
 
-/** The named keys, by TanStack's key name, where every board has them. */
+/** The named keys, by key name, where every board has them. */
 const NAMED: Readonly<Record<string, readonly string[]>> = {
   Escape: ["Escape"],
   Enter: ["Enter"],
@@ -142,9 +138,9 @@ export function createBoard(layout: KeyboardLayout, platform: KeyboardPlatform):
   // The named keys first, then what the caps type: a character typed without
   // shift wins over the same one typed with it. Then every cap by its code.
   for (const [key, ids] of Object.entries(NAMED)) add(key, ids);
-  for (const each of caps) if (each.char) add(normalizeKeyName(each.char), [each.id]);
+  for (const each of caps) if (each.char) add(keyName(each.char), [each.id]);
   for (const each of caps) {
-    if (each.shifted) add(normalizeKeyName(each.shifted), [...modifiers.shift, each.id]);
+    if (each.shifted) add(keyName(each.shifted), [...modifiers.shift, each.id]);
   }
   for (const id of present) add(`[${id}]`, [id]);
 

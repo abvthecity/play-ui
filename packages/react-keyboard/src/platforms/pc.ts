@@ -5,7 +5,7 @@ import { cap } from "../cap.ts";
  * A Windows or Linux laptop: printed F-keys, then ctrl, fn, the Windows key
  * and alt, with ctrl again on the right.
  *
- * Hotkeys are read as TanStack reads them on Windows: `Mod` holds ctrl, so a
+ * Hotkeys are read for Windows: `Mod` holds ctrl, so a
  * `Mod+K` written once lights ⌘K on a Mac and ctrl K here, and `Meta` holds
  * the Windows key.
  */

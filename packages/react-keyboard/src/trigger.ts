@@ -1,21 +1,16 @@
 /**
  * What a hotkey presses on a board.
  *
- * A shortcut is written as TanStack Hotkeys writes it, so the string that
- * binds it with `useHotkey` is the one that lights it: `"Mod+K"` is a chord,
- * `{ sequence: ["G", "I"] }` is typed one key after the other (as
+ * A shortcut is a hotkey string, written as TanStack Hotkeys writes one, so
+ * the string that binds it there is the one that lights it here: `"Mod+K"` is
+ * a chord, `{ sequence: ["G", "I"] }` is typed one key after the other (as
  * `useHotkeySequence` takes it), and `{ any: ["1", "2", "3"] }` is any one of
- * a run. TanStack parses each hotkey for the board's platform, so `Mod`
- * holds command on a Mac and ctrl on a PC, and this file only finds the caps.
+ * a run. Each hotkey is read for the board's platform, so `Mod` holds command
+ * on a Mac and ctrl on a PC.
  */
 
-import { parseHotkey, type CanonicalModifier, type Hotkey } from "@tanstack/hotkeys";
-
 import type { Board } from "./board.ts";
-import type { Modifier } from "./cap.ts";
-
-/** One hotkey string, with TanStack's autocomplete: `"Mod+Shift+Z"`, `"?"`, `"[KeyK]"`. */
-export type HotkeyString = Hotkey | (string & {});
+import { parseHotkey, type HotkeyString } from "./hotkey.ts";
 
 /** What a shortcut presses: a chord, a sequence, or any one of a run. */
 export type Binding =
@@ -52,18 +47,10 @@ export function capsForHotkey(board: Board, hotkey: HotkeyString): readonly stri
 
   if (!key) return null;
 
-  const held = parsed.modifiers.flatMap((modifier) => board.modifiers[MODIFIERS[modifier]]);
+  const held = parsed.modifiers.flatMap((modifier) => board.modifiers[modifier]);
 
   return [...new Set([...held, ...key])];
 }
-
-/** The board's name for each of TanStack's modifiers. */
-const MODIFIERS: Readonly<Record<CanonicalModifier, Modifier>> = {
-  Control: "control",
-  Shift: "shift",
-  Alt: "alt",
-  Meta: "meta",
-};
 
 /** The trigger for a shortcut's binding on `board`. */
 export function triggerOf(board: Board, binding: Binding): Trigger {
