@@ -42,19 +42,29 @@ describe("Keyboard", () => {
     expect(root.querySelector<HTMLElement>('[data-key="KeyI"]')?.dataset["step"]).toBe("2");
   });
 
-  it("lights both halves of a two-row return", async () => {
+  it("draws a two-row return as one cap with its outline over both rows", async () => {
     const uk = createBoard(qwertyUK, pc);
     const screen = await render(
       <Keyboard board={uk} trigger={triggerOf(uk, ["↵"])} data-testid="board" />,
     );
-    const halves = screen.getByTestId("board").element().querySelectorAll('[data-key="Enter"]');
+    const root = screen.getByTestId("board").element();
+    const caps = root.querySelectorAll('[data-part="cap"][data-key="Enter"]');
+    const foot = root.querySelector<HTMLElement>('[data-part="foot"][data-key="Enter"]');
 
-    expect(
-      [...halves].map((el) => [el.getAttribute("data-span"), el.hasAttribute("data-lit")]),
-    ).toEqual([
-      ["upper", true],
-      ["lower", true],
-    ]);
+    expect(caps).toHaveLength(1);
+    expect(caps[0]?.hasAttribute("data-lit")).toBe(true);
+    expect(foot).not.toBeNull();
+    await expect.poll(() => caps[0]?.hasAttribute("data-shaped")).toBe(true);
+
+    const svg = caps[0]?.querySelector("svg");
+    const cap = caps[0]?.getBoundingClientRect();
+    const footBox = foot?.getBoundingClientRect();
+
+    expect(svg?.querySelectorAll("path")).toHaveLength(2);
+    expect(Number(svg?.getAttribute("height"))).toBeCloseTo(
+      (footBox?.bottom ?? 0) - (cap?.top ?? 0),
+      0,
+    );
   });
 
   it("works out its class from the state", async () => {

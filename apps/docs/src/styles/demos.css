@@ -341,29 +341,56 @@
   background: color-mix(in oklab, var(--ink) 2%, transparent);
 }
 
+.kb-board [data-part="foot"] {
+  flex: var(--cap-width) 1 0;
+  min-width: 0;
+}
+
 /*
- * The ISO return: two caps with one id, drawn as one L-shaped key. Both halves
- * take an opaque fill, the lower one reaches up over the row gap and the
- * upper's bottom edge, and draws no top edge of its own, so no seam is left
- * where they meet. The upper keeps its bottom edge only on the step.
+ * The ISO return: one cap whose outline is the L the package draws over its
+ * row and the foot below. The box gives up its own fill and edges once the
+ * outline is there, and the paths take the same ones: the base is the edge and
+ * the depth along the bottom, the face sits 2px higher in the cap's fill.
  */
-.kb-board [data-part="cap"][data-span] {
-  background: color-mix(in oklab, var(--ink) 4%, var(--raised));
+.kb-board [data-part="cap"][data-shaped] {
+  overflow: visible;
+  background: none;
+  box-shadow: none;
 }
 
-.kb-board [data-part="cap"][data-span="upper"] {
-  border-bottom-right-radius: 0;
+.kb-board [data-part="cap"][data-shaped] > :not(svg) {
+  position: relative;
 }
 
-.kb-board [data-part="cap"][data-span="lower"] {
-  margin-top: calc(var(--gap) * -1 - 2px);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  box-shadow:
-    inset 1px 0 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
-    inset -1px 0 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
-    inset 0 -1px 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
-    inset 0 -2px 0 color-mix(in oklab, var(--ink) 6%, var(--raised));
+.kb-board [data-part="shape-base"] {
+  fill: color-mix(in oklab, var(--ink) 10%, var(--raised));
+  stroke: color-mix(in oklab, var(--ink) 19%, var(--raised));
+}
+
+.kb-board [data-part="shape-face"] {
+  fill: color-mix(in oklab, var(--ink) 4%, var(--raised));
+  stroke: color-mix(in oklab, var(--ink) 13.6%, var(--raised));
+}
+
+.kb-board [data-part="shape"] path {
+  stroke-width: 1px;
+  transition:
+    fill 160ms ease,
+    stroke 160ms ease;
+}
+
+.kb-board [data-lit] [data-part="shape"] {
+  filter: drop-shadow(0 10px 11px color-mix(in oklab, var(--lit) 45%, transparent));
+}
+
+.kb-board [data-lit] [data-part="shape-base"] {
+  fill: color-mix(in oklab, black 12%, var(--lit));
+  stroke: color-mix(in oklab, black 12%, var(--lit));
+}
+
+.kb-board [data-lit] [data-part="shape-face"] {
+  fill: var(--lit);
+  stroke: var(--lit);
 }
 
 /* The long words on the short caps: backspace, and the ISO return's top half. */
@@ -402,15 +429,9 @@
   transform: translateY(-2px);
 }
 
-.kb-board [data-part="cap"][data-lit][data-span] {
-  background: var(--lit);
-  transform: none;
-}
-
-.kb-board [data-part="cap"][data-lit][data-span="lower"] {
-  box-shadow:
-    inset 0 -2px 0 rgb(0 0 0 / 0.12),
-    0 10px 22px -8px color-mix(in oklab, var(--lit) 80%, transparent);
+.kb-board [data-part="cap"][data-lit][data-shaped] {
+  background: none;
+  box-shadow: none;
 }
 
 .kb-board [data-part="cap"][data-step="2"] {
