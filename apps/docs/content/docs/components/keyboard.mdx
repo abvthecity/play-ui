@@ -140,8 +140,28 @@ Every row of a board adds up to the same 14.5 units, so the drawing is a stack o
 ```
 
 The ISO return is two caps with the same `data-key`, marked `data-span="upper"` and
-`data-span="lower"`; square off their touching corners and pull the lower one up by the row gap so
-they read as one tall key.
+`data-span="lower"`. To draw them as one L-shaped key, give both an opaque fill, square off the
+corners where they meet, pull the lower one up over the row gap, and leave its top edge undrawn:
+
+```css
+.keyboard [data-span] {
+  background: #f1eee9;
+}
+
+.keyboard [data-span="upper"] {
+  border-bottom-right-radius: 0;
+}
+
+.keyboard [data-span="lower"] {
+  margin-top: calc(-6px - 2px); /* the row gap, and the upper's bottom edge */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow:
+    inset 1px 0 0 #ddd,
+    inset -1px 0 0 #ddd,
+    inset 0 -1px 0 #ddd;
+}
+```
 
 ## Accessibility
 

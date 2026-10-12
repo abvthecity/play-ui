@@ -250,6 +250,8 @@
 /* --- Keyboard ----------------------------------------------------------- */
 
 .kb-demo {
+  /* The board's sizes are fractions of this width, the same in every part. */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -277,7 +279,6 @@
   --lit-two: #f2b33d;
   --lit-ink: #221d18;
 
-  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -293,11 +294,11 @@
 .kb-board [data-part="row"] {
   display: flex;
   gap: var(--gap);
-  height: calc(100cqi / 16);
+  height: calc(100cqi / 16.6);
 }
 
 .kb-board [data-part="row"]:first-child {
-  height: calc(100cqi / 16 * 0.55);
+  height: calc(100cqi / 16.6 * 0.55);
 }
 
 .kb-board [data-part="stack"] {
@@ -340,16 +341,29 @@
   background: color-mix(in oklab, var(--ink) 2%, transparent);
 }
 
-/* The ISO return: two caps that read as one tall key. */
+/*
+ * The ISO return: two caps with one id, drawn as one L-shaped key. Both halves
+ * take an opaque fill, the lower one reaches up over the row gap and the
+ * upper's bottom edge, and draws no top edge of its own, so no seam is left
+ * where they meet. The upper keeps its bottom edge only on the step.
+ */
+.kb-board [data-part="cap"][data-span] {
+  background: color-mix(in oklab, var(--ink) 4%, var(--raised));
+}
+
 .kb-board [data-part="cap"][data-span="upper"] {
   border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
 }
 
 .kb-board [data-part="cap"][data-span="lower"] {
-  margin-top: calc(var(--gap) * -1 - 1px);
+  margin-top: calc(var(--gap) * -1 - 2px);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  box-shadow:
+    inset 1px 0 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
+    inset -1px 0 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
+    inset 0 -1px 0 color-mix(in oklab, var(--ink) 10%, var(--raised)),
+    inset 0 -2px 0 color-mix(in oklab, var(--ink) 6%, var(--raised));
 }
 
 /* The long words on the short caps: backspace, and the ISO return's top half. */
@@ -389,7 +403,14 @@
 }
 
 .kb-board [data-part="cap"][data-lit][data-span] {
+  background: var(--lit);
   transform: none;
+}
+
+.kb-board [data-part="cap"][data-lit][data-span="lower"] {
+  box-shadow:
+    inset 0 -2px 0 rgb(0 0 0 / 0.12),
+    0 10px 22px -8px color-mix(in oklab, var(--lit) 80%, transparent);
 }
 
 .kb-board [data-part="cap"][data-step="2"] {
