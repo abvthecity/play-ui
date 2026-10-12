@@ -1,6 +1,6 @@
 {
   "name": "@play-ui/react-deck",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A headless deck of index cards for React: a pile that deals out into a tabbed folder, flips between facets, and folds back, or rises as a sheet on a phone.",
   "keywords": [
     "accessibility",

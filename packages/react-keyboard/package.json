@@ -1,6 +1,6 @@
 {
   "name": "@play-ui/react-keyboard",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A headless drawn keyboard for React that lights the keys a shortcut presses, with pluggable layouts and platforms.",
   "keywords": [
     "accessibility",
