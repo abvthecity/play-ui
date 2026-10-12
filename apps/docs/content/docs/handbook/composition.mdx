@@ -1,0 +1,54 @@
+---
+title: Composition
+description: Replace a part's element, merge props and handlers, and reach into a component's state.
+---
+
+## The `render` prop
+
+Every part renders one element by default. Pass `render` to use your own instead. As an element, the
+part merges its props into yours:
+
+```tsx
+<CardStack.Trigger direction="right" render={<MyButton variant="primary" />}>
+  Done
+</CardStack.Trigger>
+```
+
+As a function, it receives the merged props and the part's state, and returns the element to render:
+
+```tsx
+<CardStack.Trigger
+  direction="right"
+  render={(props, state) => (
+    <MyButton {...props} tone={state.effect === "dismiss" ? "danger" : "neutral"} />
+  )}
+/>
+```
+
+## Merged props
+
+Props you pass are merged with the part's own:
+
+- Your event handlers run first. Call `event.preventDefault()` to skip the part's own handler for that
+  event, for example to stop a key from swiping.
+- Styles merge, with yours winning on conflicts.
+- Refs merge, so you can hold a ref to any part's element.
+
+## Reading state
+
+Components expose their state to your own parts through a hook. Inside a card stack's `Root`,
+`useCardStack()` returns the items in order, the top item, the count, and actions like `swipe` and
+`back`:
+
+```tsx
+function Counter() {
+  const { count } = useCardStack();
+
+  return <p>{count} left</p>;
+}
+```
+
+## Imperative actions
+
+When something outside the component needs to act on it, pass `actionsRef` to the root and call its
+methods from anywhere, for example from a toolbar or an undo toast.

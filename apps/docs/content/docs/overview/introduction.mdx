@@ -1,0 +1,51 @@
+---
+title: Introduction
+description: Headless, composable and accessible React components that use motion to make the web feel playful.
+---
+
+play-ui is a library of interactive React components built around movement: cards you throw, stacks that
+reshuffle, layouts that fly from one arrangement to the next. Each component owns the gesture, the
+physics and the accessibility, and leaves every pixel of the look to you.
+
+<Demo>
+  <CardStackDemo />
+</Demo>
+
+Drag the top card, or focus the stack and press <kbd>←</kbd> or <kbd>→</kbd>.
+
+## Principles
+
+### Headless
+
+Components ship with no styles. They render plain elements, expose their state as data attributes and
+CSS variables, and let you style them with whatever you already use: plain CSS, CSS modules, Tailwind
+or anything else.
+
+### Composable
+
+Each component is a set of small parts that you assemble. Every part renders one element, accepts that
+element's props, and can be swapped for your own element through a `render` prop.
+
+### Accessible
+
+Every gesture has a keyboard equivalent, changes are announced to assistive technology, and
+decorative layers stay out of the accessibility tree. Motion respects the viewer's
+`prefers-reduced-motion` setting.
+
+### Motion with physics
+
+Movement is driven by springs and the speed of your own hand, not by fixed timers, so an interaction
+feels continuous from the moment you grab something to the moment it settles.
+
+### Tree-shakable
+
+Each package is ESM, side-effect free and split per module, so your bundle only carries what you
+import.
+
+## Packages
+
+| Package                | What it is                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `@play-ui/react-cards` | A swipeable [card stack](/docs/components/card-stack) and the motion around it |
+
+More are on the way.

@@ -1,0 +1,46 @@
+---
+title: Drag Card
+description: Swap a native drag's ghost image for a card you draw, that leans as it moves.
+---
+
+`createDragCard<T>()` swaps the browser's drag image for a card you draw. The drag stays native, so it
+still carries its data and drops into other apps.
+
+```tsx
+import { createDragCard } from "@play-ui/react-cards";
+
+const noteCard = createDragCard<Note>();
+
+<div draggable onDragStart={(event) => noteCard.start(event, note)} />;
+
+function Held() {
+  const { payload, outcome, ref } = noteCard.useCard<HTMLDivElement>();
+
+  return payload && <div ref={ref} className="held" data-outcome={outcome ?? undefined} />;
+}
+```
+
+`start(event, payload)`, called from `dragstart`, hides the browser's snapshot and puts `payload` in
+the hand. `useCard()`, in a layer you mount once, returns the payload, how the drag ended, and a `ref`
+whose `transform` follows the pointer. The card leans with the sideways speed through the
+`--drag-lean` variable, in degrees.
+
+Give the layer `position: fixed`, `left: 0`, `top: 0` and `pointer-events: none` so the drop targets
+under it still receive the drag.
+
+## API reference
+
+### createDragCard(options)
+
+| Option    | Type     | Description                                           |
+| --------- | -------- | ----------------------------------------------------- |
+| `exitMs`  | `number` | How long the card stays after the drag ends, to land. |
+| `maxLean` | `number` | The most the card leans, in degrees.                  |
+
+Returns `{ start, useCard, get }`.
+
+| Field     | Description                                                                       |
+| --------- | --------------------------------------------------------------------------------- |
+| `payload` | What is in the hand, kept through the exit so the card can still draw it.         |
+| `outcome` | `null` while held; `"dropped"` or `"cancelled"` for `exitMs` after the drag ends. |
+| `ref`     | The element that follows the pointer.                                             |

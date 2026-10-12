@@ -1,0 +1,39 @@
+---
+title: Accessibility
+description: How play-ui keeps playful interactions usable by everyone.
+---
+
+Motion and gestures are the point of play-ui, so every component is designed to work just as well
+without them.
+
+## Keyboard
+
+Every gesture has a keyboard equivalent. In a [card stack](/docs/components/card-stack), the stage is
+focusable and the arrow keys swipe the top card; triggers are real `<button>` elements. You can turn
+the keys off, or add your own, through props.
+
+## Announcements
+
+Components that change what is on screen can announce the change through a polite live region. You
+write the sentence, so it reads naturally in your product's voice. A card stack calls `announce` after
+each swipe lands.
+
+## Hidden layers
+
+Parts that are only decoration, such as the cards beneath the top one, their shading, and swipe
+indicators, are marked `aria-hidden`, and the card beneath the top one is `inert`, so screen readers and
+the tab order only ever see the card in front.
+
+## Reduced motion
+
+By default every component follows the viewer's `prefers-reduced-motion` setting. When reduced motion
+is on, a swipe lands at once instead of flying. You can override this per component with the
+`reducedMotion` option: `"system"` (the default), `"always"` or `"never"`.
+
+## Your part
+
+Because the components are headless, a few things are yours to get right:
+
+- Give interactive parts a visible focus style.
+- Keep enough contrast between text and the colours you choose.
+- Give icon-only buttons an accessible name.

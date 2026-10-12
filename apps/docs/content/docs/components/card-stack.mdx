@@ -1,0 +1,231 @@
+---
+title: Card Stack
+description: A stack of cards you swipe left or right to keep, cycle or dismiss.
+---
+
+<Demo>
+  <CardStackDemo />
+</Demo>
+
+The stack owns the interaction and the motion: the drag, the threshold, the throw, the order, the keys
+and every card's transform. What a card looks like, how big it is and where it sits are yours.
+
+## Anatomy
+
+```tsx
+import { CardStack } from "@play-ui/react-cards";
+
+<CardStack.Root items={notes} getKey={(note) => note.id} onSwipe={handleSwipe}>
+  <CardStack.Stage className="stage">
+    <CardStack.Underlays className="card">
+      {() => <CardStack.Shade className="shade" />}
+    </CardStack.Underlays>
+    <CardStack.Cards className="card">
+      {(note: Note) => (
+        <>
+          <h2>{note.title}</h2>
+          <CardStack.Indicator direction="right" className="stamp">
+            Done
+          </CardStack.Indicator>
+          <CardStack.Indicator direction="left" className="stamp">
+            Later
+          </CardStack.Indicator>
+          <CardStack.Shade className="shade" />
+        </>
+      )}
+    </CardStack.Cards>
+  </CardStack.Stage>
+  <CardStack.Trigger direction="left">Later</CardStack.Trigger>
+  <CardStack.Trigger direction="right">Done</CardStack.Trigger>
+</CardStack.Root>;
+```
+
+<Callout title="The one layout rule">
+  The cards sit on top of one another inside the stage, for example `.stage { position: relative;
+  width: 336px; height: 470px }` and `.card { position: absolute; inset: 0 }`.
+</Callout>
+
+## Typed stacks
+
+`Cards` cannot see the root's item type through context, so the callback above annotates its
+parameter, which nothing checks. `createCardStack<Item>()` fixes the type once instead. It returns the
+same parts, with `Root`, `Cards` and `useCardStack` typed for `Item`:
+
+```tsx
+const NoteStack = createCardStack<Note>();
+
+<NoteStack.Root items={notes} getKey={(note) => note.id}>
+  <NoteStack.Stage className="stage">
+    <NoteStack.Cards className="card">{(note) => <h2>{note.title}</h2>}</NoteStack.Cards>
+  </NoteStack.Stage>
+</NoteStack.Root>;
+```
+
+Nothing is created at runtime, so parts from `CardStack` and a typed stack mix freely inside one root.
+
+## Examples
+
+### Indicators as a wash
+
+An `Indicator` need not be a label. Laid over the whole card, one per direction, it becomes a wash
+that deepens with the drag, and a label above it can turn into a solid pill once the swipe is armed.
+The demo above does exactly that:
+
+```css
+.tint {
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--card-stack-progress) * 0.88);
+}
+
+.stamp[data-armed] {
+  background: white;
+}
+```
+
+Key a card's content by item (`<Face key={item.id} />`) so a card moving up gets fresh indicators,
+never the previous card's progress.
+
+### Bringing a card back
+
+`back()` cycles the other way: the bottom card slides out from beneath the pile and springs home in
+front, while the cards above it step back a depth. Under reduced motion it lands at once. It needs two
+cards, and returns `false` otherwise. Map it to a key with `backKeys`:
+
+```tsx
+<CardStack.Root backKeys={["ArrowUp"]} /* … */ />
+```
+
+### Undo a dismiss
+
+Pass `actionsRef` to the root and call `restore(key)` in the same update that puts the item back in
+`items`. The card returns to the top of the stack.
+
+## API reference
+
+### Root
+
+Owns `items`, the order and the motion. Renders a `div`. Arrow keys swipe while focus is inside.
+
+| Prop            | Type                          | Description                                                                                                                        |
+| --------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `items`         | `Item[]`                      | The cards. New items join at the bottom; the stack keeps its own order.                                                            |
+| `getKey`        | `(item) => string`            | A stable key per item.                                                                                                             |
+| `effects`       | `{ left, right }`             | What each direction does: `"cycle"` (to the bottom), `"dismiss"` (out) or `"none"`. Default `{ left: "cycle", right: "dismiss" }`. |
+| `onSwipe`       | `(details) => void`           | After a swipe lands, with `{ item, key, direction, effect }`. A dismissed card is already out.                                     |
+| `announce`      | `(top, details) => string`    | The sentence a polite live region reads once a swipe lands. Without it, nothing is announced.                                      |
+| `keyboard`      | `boolean`                     | Whether the arrow keys swipe. Default `true`.                                                                                      |
+| `backKeys`      | `string[]`                    | Keys that bring the bottom card back, as `back()` does. Default none.                                                              |
+| `onBack`        | `(details) => void`           | After a card has been brought back.                                                                                                |
+| `onOrderChange` | `(keys) => void`              | Whenever the order changes.                                                                                                        |
+| `onPress`       | `(item) => void`              | A tap on the top card.                                                                                                             |
+| `onArmedChange` | `(direction \| null) => void` | When a drag crosses or leaves the threshold.                                                                                       |
+| `options`       | `Partial<CardStackOptions>`   | Motion and gesture tuning. See [Options](#options).                                                                                |
+| `actionsRef`    | `Ref<CardStackActions>`       | `{ swipe, back, settle, layout, restore }`, for acting from outside the stack.                                                     |
+
+| Attribute    | Description            |
+| ------------ | ---------------------- |
+| `data-count` | How many cards remain. |
+| `data-empty` | Present with no cards. |
+
+### Stage
+
+The drag surface. Renders a focusable `div`. The only style it sets is `touch-action`.
+
+| Prop             | Type              | Description                                                                  |
+| ---------------- | ----------------- | ---------------------------------------------------------------------------- |
+| `onVerticalDrag` | `(event) => void` | A drag that locked to the vertical axis, for example to pull a sheet closed. |
+
+| Attribute / variable    | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| `data-swiping`          | `"left"` or `"right"` while dragging.        |
+| `data-armed`            | Present once the drag is past the threshold. |
+| `--card-stack-progress` | 0 to 1 toward the threshold.                 |
+| `--card-stack-offset`   | The drag's horizontal offset, in px.         |
+
+### Cards
+
+The top card and the one beneath it, two `div`s. `children` is `(item, state) => content`. The card
+beneath is `inert` and `aria-hidden`.
+
+| Attribute    | Description                     |
+| ------------ | ------------------------------- |
+| `data-slot`  | `"top"` or `"next"`.            |
+| `data-depth` | `0` for the top card, `1` next. |
+
+### Underlays
+
+Planes beneath the next card, one `div` per depth from 2 to `maxDepth`, each `aria-hidden`.
+`children` is an optional `(state) => content`.
+
+### Shade
+
+A layer inside a card or underlay whose opacity the stack drives by depth. Give it a colour.
+
+### Indicator
+
+What a swipe that way will do. Only the top card's indicators respond.
+
+| Prop        | Type                | Description             |
+| ----------- | ------------------- | ----------------------- |
+| `direction` | `"left" \| "right"` | The drag it answers to. |
+
+| Attribute / variable    | Description                                   |
+| ----------------------- | --------------------------------------------- |
+| `data-direction`        | The indicator's direction.                    |
+| `data-effect`           | What a swipe that way does.                   |
+| `data-active`           | Present while a drag heads its way.           |
+| `data-armed`            | Present once that drag is past the threshold. |
+| `--card-stack-progress` | 0 to 1 toward the threshold.                  |
+
+### Trigger
+
+Swipes the top card one way. Renders a `button`.
+
+| Prop        | Type                | Description        |
+| ----------- | ------------------- | ------------------ |
+| `direction` | `"left" \| "right"` | The way it swipes. |
+
+| Attribute        | Description                         |
+| ---------------- | ----------------------------------- |
+| `data-direction` | The trigger's direction.            |
+| `data-effect`    | What a swipe that way does.         |
+| `data-disabled`  | Present when that way does nothing. |
+
+### useCardStack
+
+Inside the root, returns `{ items, top, count, swipe, back, settle }` for counts, empty states and
+custom controls.
+
+### Options
+
+Pass any of these to `options`; the rest keep their defaults (`DEFAULT_CARD_STACK_OPTIONS`).
+
+| Option                                                                    | Default             | Description                                                          |
+| ------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------- |
+| `maxDepth`                                                                | 3                   | Cards shown beneath the top one.                                     |
+| `depthScale` / `depthOffset` / `depthShade`                               | 0.05 / 10 / 0.2     | Per depth: smaller, lower by px, shade opacity.                      |
+| `depthRotation` / `depthSpread`                                           | 0 / 0               | A loose pile: the cards beneath lean and shift, alternating sides.   |
+| `threshold`                                                               | 0.32                | Travel that arms a swipe, in card widths.                            |
+| `flingVelocity`                                                           | 0.5                 | Speed in px/ms that swipes whatever the distance.                    |
+| `maxRotation` / `tilt`                                                    | 12 / `"grab"`       | Degrees at one card width; `grab` tilts away from where it was held. |
+| `lift` / `liftDistance`                                                   | true / 1            | The cards beneath rise with the drag, fully at one card width.       |
+| `axisLockDistance` / `pressScale`                                         | 6 / 0.97            | Travel before the drag picks an axis; scale while pressed.           |
+| `dragFollowY` / `resistExponent`                                          | 0.25 / 0.72         | Share of vertical travel followed; a closed direction's resistance.  |
+| `dismissDuration`                                                         | 280                 | ms.                                                                  |
+| `dismissOvershoot` / `dismissLift` / `dismissRotation`                    | 32 / 10 / 1.5       | px past the edge, px a button dismiss rises, tilt times the drag's.  |
+| `cycleGap` / `cycleOutDuration` / `cycleStiffness` / `cycleDamping`       | 20 / 340 / 220 / 26 | A kept card turns `cycleGap` px clear of the stack and springs home. |
+| `cycleRotation`                                                           | 0.6                 | A button keep's tilt, as a fraction of `maxRotation`.                |
+| `promoteDelay` / `promoteStagger` / `promoteStiffness` / `promoteDamping` | 0 / 40 / 300 / 26   | The cards beneath coming forward once the top one clears.            |
+| `snapStiffness` / `snapDamping` / `snapMass`                              | 520 / 34 / 0.7      | A release that did not swipe.                                        |
+| `appear` / `appearDelay` / `appearStagger`                                | true / 90 / 45      | The cards beneath fanning out when the stage mounts.                 |
+| `timeScale`                                                               | 1                   | Multiplies every duration; 4 is quarter speed.                       |
+| `reducedMotion`                                                           | `"system"`          | `"always"` lands every swipe at once; `"never"` always animates.     |
+
+## How it works
+
+Only two cards are real DOM. `CardStackEngine` (framework-free, and exported) plays a swipe on the
+elements with the Web Animations API, then the root changes the order: the content moves between the
+elements and the engine puts them back where they rest in the same frame, so nothing jumps. The
+physics (`cyclePath`, `releaseDirection`, `springTiming` and friends) and the ordering
+(`reconcileOrder`, `cycleKey`, `dismissKey`) are pure functions, exported too.

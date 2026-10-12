@@ -1,0 +1,211 @@
+/*
+ * The live examples' look. None of this ships with the components: it is the
+ * part a consumer writes, here in the same tokens as the docs.
+ */
+
+.demo {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 20px;
+  padding: 48px 24px 40px;
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) 0 0 / 18px 18px,
+    var(--surface);
+}
+
+.demo-stack {
+  --tint-done: #a03e08;
+  --tint-later: #3a342e;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+/* The one layout rule a stack needs: the cards sit on top of one another. */
+.demo-stage {
+  position: relative;
+  width: 300px;
+  height: 360px;
+  cursor: grab;
+  user-select: none;
+  outline: none;
+}
+
+.demo-stage:active {
+  cursor: grabbing;
+}
+
+.demo-stage:focus-visible {
+  box-shadow: none;
+}
+
+.demo-stage:focus-visible .demo-card[data-slot="top"] .demo-face {
+  box-shadow: var(--shadow-card), var(--focus);
+}
+
+.demo-card {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.demo-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--raised);
+  box-shadow: var(--shadow-card);
+}
+
+.demo-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--canvas);
+  pointer-events: none;
+}
+
+.demo-stack .demo-kicker {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.demo-stack .demo-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.demo-stack .demo-text {
+  margin: auto 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* A wash that deepens with the drag, and a label that turns solid when armed. */
+.demo-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: calc(var(--card-stack-progress, 0) * 0.88);
+}
+
+.demo-tint-done {
+  background: var(--tint-done);
+}
+
+.demo-tint-later {
+  background: var(--tint-later);
+}
+
+.demo-stamp {
+  position: absolute;
+  top: 18px;
+  padding: 3px 12px;
+  border: 1.5px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: var(--card-stack-progress, 0);
+  pointer-events: none;
+  transition:
+    background-color 0.12s,
+    color 0.12s,
+    transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.demo-stage:not([data-swiping]) :is(.demo-tint, .demo-stamp) {
+  transition: opacity 0.22s ease-out;
+}
+
+.demo-stamp-done {
+  left: 18px;
+  transform: rotate(-8deg);
+}
+
+.demo-stamp-later {
+  right: 18px;
+  transform: rotate(8deg);
+}
+
+.demo-stamp[data-armed] {
+  background: #fff;
+}
+
+.demo-stamp-done[data-armed] {
+  color: var(--tint-done);
+  transform: rotate(-8deg) scale(1.12);
+}
+
+.demo-stamp-later[data-armed] {
+  color: var(--tint-later);
+  transform: rotate(8deg) scale(1.12);
+}
+
+.demo-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.demo-act {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.demo-act:active:not([data-disabled]) {
+  transform: scale(0.95);
+}
+
+.demo-act[data-disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.demo-empty {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  width: 300px;
+  height: 360px;
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.demo-stack .demo-empty p {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-stamp,
+  .demo-act,
+  .button {
+    transition: none;
+  }
+}

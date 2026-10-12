@@ -1,0 +1,57 @@
+---
+title: Dock
+description: Drag an element to one of three docks along the foot of the page, or tuck it behind an edge.
+---
+
+`useDock` drags a closed stack, or anything else, to one of three docks along the foot of the page:
+`left`, `center` or `right`, a third of the viewport each. It moves the element under the pointer,
+reports the dock it is over as `target`, and on release calls `onDock` and glides the element from
+where it was dropped to wherever your layout puts that dock.
+
+```tsx
+import { useDock } from "@play-ui/react-cards";
+
+const { ref, handlers, dragging, target } = useDock<HTMLButtonElement>({ position, onDock });
+
+<button ref={ref} {...handlers} style={{ touchAction: "none" }} onClick={open} />;
+```
+
+A press shorter than `dragThreshold` (6px) stays a click, and the click after a real drag is swallowed,
+so the element can still be a button. <kbd>←</kbd> and <kbd>→</kbd> step the dock from the keyboard.
+Where each dock is, and remembering the choice, are yours.
+
+## Tucking
+
+With `tuck: true` the element can also be put away behind a side edge: let go with more than 35% of it
+past the left or right edge, or throw it at that edge faster than 1.1 px/ms from its outer third, and
+`onDock` receives `"tucked-left"` or `"tucked-right"`. Your layout draws it there with a sliver still on
+screen (the CSS `translate` property stays out of the way of the hook's `transform`).
+
+A press on the tucked element, or <kbd>Enter</kbd>, calls `onDock` with the dock on that side instead
+of clicking it. A pull inward drops it wherever it is let go, and the arrow key pointing inward brings
+it back too.
+
+## API reference
+
+### useDock(options)
+
+| Option          | Type                     | Description                                                                     |
+| --------------- | ------------------------ | ------------------------------------------------------------------------------- |
+| `position`      | `DockPlace`              | Where the element rests now. The hook never moves it there; your layout does.   |
+| `onDock`        | `(place) => void`        | Once per release, arrow key or untuck, with the place chosen.                   |
+| `tuck`          | `boolean`                | Allow tucking behind a side edge.                                               |
+| `dragThreshold` | `number`                 | Travel in px before a press becomes a drag. Default 6.                          |
+| `reducedMotion` | `boolean`                | Skip the glide into place.                                                      |
+| `spring`        | `Spring`                 | The glide into place.                                                           |
+| `disabled`      | `boolean`                | Turn dragging off.                                                              |
+| `area`          | `RefObject<HTMLElement>` | The element whose width is split into the three docks. The viewport by default. |
+| `ref`           | `RefObject<E>`           | Your own ref for the element, if you already hold one.                          |
+
+Returns `{ ref, handlers, dragging, target }`. Spread `handlers` onto the element; `target` is the place
+it would land if let go now.
+
+### Pure helpers
+
+`dockAt(x, width)`, `stepDock(from, step)`, `releasePlace`, `stepPlace`, `tuckedSide`, `untuck`,
+`isDockPosition` and `isDockPlace` are the rules underneath, exported for your own layouts and for
+checking a remembered value.

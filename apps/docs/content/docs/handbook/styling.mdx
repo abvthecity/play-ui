@@ -1,0 +1,72 @@
+---
+title: Styling
+description: Style play-ui components with plain CSS, CSS modules, Tailwind or anything else.
+---
+
+play-ui components render plain elements with no styles of their own, beyond the few inline styles a
+gesture needs to work (for example, `touch-action` on a drag surface). Everything you see is yours.
+
+## Class names
+
+Every part accepts `className`. It can be a string, or a function that receives the part's state and
+returns a string, which is handy for utility classes:
+
+```tsx
+<CardStack.Trigger
+  direction="right"
+  className={(state) => (state.disabled ? "button button-disabled" : "button")}
+/>
+```
+
+## Data attributes
+
+Parts describe their state with data attributes, which you can target directly from CSS:
+
+```css
+.stage[data-swiping="left"] {
+  cursor: grabbing;
+}
+
+.stamp[data-armed] {
+  background: white;
+}
+```
+
+Each component's page lists the attributes its parts set.
+
+## CSS variables
+
+Values that change every frame during a gesture, such as how far a drag has travelled toward its
+threshold, are written as CSS variables on the part. Read them with `calc()`:
+
+```css
+.wash {
+  opacity: calc(var(--card-stack-progress) * 0.9);
+}
+```
+
+## Layout rules
+
+A few components need one layout rule from you, because only you know how big things should be. A card
+stack, for example, needs its cards laid over one another:
+
+```css
+.stage {
+  position: relative;
+  width: 336px;
+  height: 470px;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+}
+```
+
+The component pages call out any rule like this at the top.
+
+## Animating your own elements
+
+The components animate their own transforms with the Web Animations API. Keep your own transitions on
+a child element, rather than on the element the component moves, so the two never fight over
+`transform`.

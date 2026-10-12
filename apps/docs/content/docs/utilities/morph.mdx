@@ -1,0 +1,54 @@
+---
+title: Morph
+description: Play the same elements from one layout to another, each a beat after the one before.
+---
+
+`useMorph` plays the same cards from one layout to another, for example a stack to a grid of every
+card and back, each a beat after the one before.
+
+Mark every element that stands for one thing with `data-morph-key`, and make the change through
+`morph`: it notes where each element is, runs your state update, and once it has committed plays each
+element from where it was drawn to where it is now.
+
+```tsx
+import { useMorph } from "@play-ui/react-cards";
+
+const root = useRef<HTMLDivElement>(null); // around both layouts
+const { morph } = useMorph(root);
+
+morph(() => setView("grid"), {
+  origin: () => deepestCard, // where elements only the new view draws rise from
+  destination: () => deepestCard, // where elements only the old view drew fall back to
+  order: (key) => rank.get(key) ?? 0, // each element's turn, 0 first
+});
+```
+
+The morph is a FLIP on the element's own `transform`. Inside a card stack, which already owns each
+card's transform, key a child of the card rather than the card itself.
+
+An element that leaves is drawn as a copy of how it looked, in `layer` (`document.body` without one).
+A morph started mid-flight starts from wherever the elements are.
+
+## API reference
+
+### useMorph(root)
+
+Returns `{ morph }`. `morph(change, options?)` takes a state update and options, or a function that
+returns options, called after the update commits so it can measure the new layout.
+
+| Option          | Type                              | Default    | Description                                                   |
+| --------------- | --------------------------------- | ---------- | ------------------------------------------------------------- |
+| `duration`      | `number`                          | 340        | ms each element takes.                                        |
+| `stagger`       | `number`                          | 24         | ms between one element and the next.                          |
+| `maxStagger`    | `number`                          | 220        | The most the whole stagger may add; a long run shares it out. |
+| `easing`        | `string`                          | overshoot  | Any CSS easing.                                               |
+| `reducedMotion` | `"system" \| "always" \| "never"` | `"system"` | Whether to animate.                                           |
+| `origin`        | `(key) => Box \| null`            |            | Where a newcomer starts; without one it fades in.             |
+| `destination`   | `(key) => Box \| null`            |            | Where a leaver goes; without one it fades out.                |
+| `order`         | `(key) => number`                 |            | Each key's turn; document order without one.                  |
+| `layer`         | `HTMLElement \| null`             |            | Where leavers' copies are drawn.                              |
+
+### Lower-level functions
+
+`captureMorph`, `playMorph`, `morphElements`, `staggerDelay` and `flipTransform` are the parts
+underneath, for running a morph outside React.

@@ -1,0 +1,61 @@
+---
+title: Slideshow
+description: A row of slides your finger pulls along, one at a time.
+---
+
+`useSlideshow` is the card stack's gesture laid flat: a row of slides of any size that a swipe pulls
+along, one at a time. Swipe left for the next slide and right for the previous one; the ends resist,
+and a release springs to the slide it was heading for.
+
+```tsx
+import { useSlideshow } from "@play-ui/react-cards";
+
+function Gallery({ images }: { images: string[] }) {
+  const [index, setIndex] = useState(0);
+  const { viewportRef, trackRef, go } = useSlideshow({
+    count: images.length,
+    index,
+    onIndexChange: setIndex,
+  });
+
+  return (
+    <div ref={viewportRef} style={{ overflow: "hidden", touchAction: "pan-y" }}>
+      <div ref={trackRef} style={{ display: "flex" }}>
+        {images.map((src) => (
+          <img key={src} src={src} alt="" style={{ flex: "0 0 100%" }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+The hook owns the track's `transform` and nothing else. Give the viewport `overflow: hidden`, the track
+`display: flex`, and each slide `flex: 0 0 100%`. A `column-gap` on the track is counted into every
+step. Set the viewport's `touch-action` to `pan-y` so the page still scrolls, or `none` when you handle
+vertical drags yourself.
+
+## API reference
+
+### useSlideshow(options)
+
+| Option           | Type                        | Description                                                          |
+| ---------------- | --------------------------- | -------------------------------------------------------------------- |
+| `count`          | `number`                    | How many slides there are.                                           |
+| `index`          | `number`                    | The slide on screen. Controlled.                                     |
+| `onIndexChange`  | `(index) => void`           | Asks for the next slide, after a swipe or `go`.                      |
+| `onVerticalDrag` | `(event) => void`           | A drag that locked to the vertical axis. Without it, one is dropped. |
+| `options`        | `Partial<SlideshowOptions>` | Gesture tuning, below.                                               |
+
+Returns `{ viewportRef, trackRef, go }`, where `go(index)` slides to an index, clamped to the ends.
+
+| Option             | Default                                    | Description                                                 |
+| ------------------ | ------------------------------------------ | ----------------------------------------------------------- |
+| `threshold`        | 0.22                                       | Travel that turns the slide, as a fraction of the viewport. |
+| `flingVelocity`    | 0.3                                        | Release speed in px/ms that turns the slide regardless.     |
+| `axisLockDistance` | 6                                          | Travel in px before the gesture picks an axis.              |
+| `resistExponent`   | 0.72                                       | How the ends resist.                                        |
+| `spring`           | `{ stiffness: 380, damping: 38, mass: 1 }` | The settle onto a slide.                                    |
+| `reducedMotion`    | `"system"`                                 | Whether to animate.                                         |
+
+`SlideshowEngine`, `releaseTarget` and `slideOffset` are exported for use outside React.
