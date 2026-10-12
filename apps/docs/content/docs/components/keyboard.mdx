@@ -141,12 +141,17 @@ Every row of a board adds up to the same 14.5 units, so the drawing is a stack o
 
 The ISO return spans two rows. It is one `data-part="cap"` in the upper row, and a
 `data-part="foot"` that holds its room in the row below (give it the same `flex` as a cap). The cap
-draws its L-shaped outline as an `svg[data-part="shape"]` with two paths: `shape-base`, the whole L,
-and `shape-face`, the same L 2px shorter along its bottom edges, so a darker base shows as depth.
-Once the outline is drawn the cap carries `data-shaped`; drop the box's own look then and fill the
-paths instead:
+draws its L-shaped outline as an `svg[data-part="shape"]`, with the corners of the cap's own
+`border-radius`, and carries `data-shaped` once it is drawn. Its three paths take the layers a box
+would: `shape-face` is the fill, `shape-edge` is a stroke clipped to the inside of the L (so a 2px
+stroke is a 1px inset edge), and `shape-depth` is the band along every bottom edge, as tall as the
+cap's `--cap-depth`. Give them the same colours as your caps and the return matches them exactly:
 
 ```css
+.keyboard {
+  --cap-depth: 2px;
+}
+
 .keyboard [data-part="foot"] {
   flex: var(--cap-width) 1 0;
 }
@@ -157,18 +162,17 @@ paths instead:
   box-shadow: none;
 }
 
-.keyboard [data-part="shape-base"] {
-  fill: #e4ded5;
-  stroke: #d6cec2;
-}
-
 .keyboard [data-part="shape-face"] {
-  fill: #f1eee9;
-  stroke: #ddd6cb;
+  fill: rgb(0 0 0 / 0.04);
 }
 
-.keyboard [data-lit] [data-part="shape-face"] {
-  fill: orange;
+.keyboard [data-part="shape-edge"] {
+  stroke: rgb(0 0 0 / 0.1);
+  stroke-width: 2px;
+}
+
+.keyboard [data-part="shape-depth"] {
+  fill: rgb(0 0 0 / 0.06);
 }
 ```
 

@@ -60,7 +60,8 @@ describe("Keyboard", () => {
     const cap = caps[0]?.getBoundingClientRect();
     const footBox = foot?.getBoundingClientRect();
 
-    expect(svg?.querySelectorAll("path")).toHaveLength(2);
+    expect(svg?.querySelector('[data-part="shape-face"]')).not.toBeNull();
+    expect(svg?.querySelector('[data-part="shape-edge"]')).not.toBeNull();
     expect(Number(svg?.getAttribute("height"))).toBeCloseTo(
       (footBox?.bottom ?? 0) - (cap?.top ?? 0),
       0,

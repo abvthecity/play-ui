@@ -2,6 +2,7 @@
 
 import { renderPart, type PartProps } from "@play-ui/utils";
 import {
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -34,6 +35,14 @@ export interface KeyboardProps
   trigger: Trigger | null;
 }
 
+/**
+ * `value` on a whole device pixel, as a box's own edges are painted, so an
+ * outline drawn from measured boxes is as crisp as the boxes beside it.
+ */
+function pixel(value: number): number {
+  return Math.round(value * devicePixelRatio) / devicePixelRatio;
+}
+
 /** A row's key: its first cap, which no other row starts with. */
 function rowKey(row: KeyRow): string {
   const first = row[0];
@@ -48,11 +57,22 @@ function rowKey(row: KeyRow): string {
  * and its foot in the row below, drawn as one SVG behind the legend. Until it
  * has measured (on the server, and the first frame) nothing is drawn and the
  * cap carries no `data-shaped`, so a look can style it as a plain cap.
+ *
+ * Three paths share the L, so a look can lay the same layers on it as on a
+ * box: `shape-face` (the fill), `shape-edge` (a stroke clipped to the inside
+ * of the L, as an inset outline is) and `shape-depth` (the band along every
+ * bottom edge, as tall as `--cap-depth` (none when it is unset), as an inset
+ * shadow from below is). The band follows the variable live, with no
+ * measuring.
  */
 function TallShape(props: { id: string; onShaped: (shaped: boolean) => void }): ReactElement {
   const { id, onShaped } = props;
   const svg = useRef<SVGSVGElement>(null);
-  const [geometry, setGeometry] = useState<TallCapGeometry | null>(null);
+  const [geometry, setGeometry] = useState<(TallCapGeometry & { x: number; y: number }) | null>(
+    null,
+  );
+  // An id fit for `url(#…)`.
+  const unique = `cap${useId().replaceAll(/[^\w-]/gu, "")}`;
 
   useLayoutEffect(() => {
     const cap = svg.current?.parentElement;
@@ -68,14 +88,18 @@ function TallShape(props: { id: string; onShaped: (shaped: boolean) => void }): 
 
       const top = cap.getBoundingClientRect();
       const bottom = foot.getBoundingClientRect();
-      const radius = Number.parseFloat(getComputedStyle(cap).borderTopLeftRadius) || 0;
+      const style = getComputedStyle(cap);
+      const left = pixel(top.left);
+      const upper = pixel(top.top);
 
       setGeometry({
-        width: top.width,
-        height: bottom.bottom - top.top,
-        foot: bottom.width,
-        step: top.height,
-        radius,
+        x: left - top.left,
+        y: upper - top.top,
+        width: pixel(top.right) - left,
+        height: pixel(bottom.bottom) - upper,
+        foot: pixel(top.right) - pixel(bottom.left),
+        step: pixel(top.bottom) - upper,
+        radius: Number.parseFloat(style.borderTopLeftRadius) || 0,
       });
       onShaped(true);
     }
@@ -93,6 +117,10 @@ function TallShape(props: { id: string; onShaped: (shaped: boolean) => void }): 
     };
   }, [id, onShaped]);
 
+  const path = geometry ? tallCapPath(geometry) : "";
+  const clip = `${unique}-inside`;
+  const band = `${unique}-band`;
+
   return (
     <svg
       ref={svg}
@@ -101,12 +129,32 @@ function TallShape(props: { id: string; onShaped: (shaped: boolean) => void }): 
       fill="none"
       width={geometry?.width ?? 0}
       height={geometry?.height ?? 0}
-      style={{ position: "absolute", top: 0, left: 0, overflow: "visible", pointerEvents: "none" }}
+      style={{
+        position: "absolute",
+        top: geometry?.y ?? 0,
+        left: geometry?.x ?? 0,
+        overflow: "visible",
+        pointerEvents: "none",
+      }}
     >
       {geometry ? (
         <>
-          <path data-part="shape-base" d={tallCapPath(geometry, 0.5)} />
-          <path data-part="shape-face" d={tallCapPath(geometry, 0.5, 2)} />
+          <defs>
+            <clipPath id={clip}>
+              <path d={path} />
+            </clipPath>
+            <mask id={band}>
+              <path d={path} fill="white" />
+              <path
+                d={path}
+                fill="black"
+                style={{ transform: "translateY(calc(var(--cap-depth, 0px) * -1))" }}
+              />
+            </mask>
+          </defs>
+          <path data-part="shape-face" d={path} />
+          <path data-part="shape-edge" d={path} clipPath={`url(#${clip})`} />
+          <path data-part="shape-depth" d={path} mask={`url(#${band})`} />
         </>
       ) : null}
     </svg>
@@ -144,9 +192,8 @@ function TallCap(props: {
  * A cap that spans two rows (the ISO return) is one `data-part="cap"` in the
  * upper row with `data-span="upper"`, and a `div[data-part="foot"]` holding
  * its room in the row below. The cap draws its L-shaped outline as an
- * `svg[data-part="shape"]` with two paths, `shape-base` (the whole L) and
- * `shape-face` (the L 2px shorter along its bottom edges, for depth), and
- * carries `data-shaped` once that outline is drawn; fill and stroke them.
+ * `svg[data-part="shape"]` with `shape-face`, `shape-edge` and `shape-depth`
+ * paths, and carries `data-shaped` once that outline is drawn.
  * `--cap-width` is the cap's width in key units, and `--cap-index` its place
  * on the board, for a stagger.
  */

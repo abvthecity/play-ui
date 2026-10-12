@@ -15,6 +15,7 @@ import {
 } from "@play-ui/react-keyboard";
 import { useMemo, useState, useSyncExternalStore, type ReactElement } from "react";
 
+import { RangeControl } from "@/components/range-control.tsx";
 import { SegmentedControl } from "@/components/segmented-control.tsx";
 
 interface Shortcut {
@@ -106,6 +107,7 @@ export function KeyboardDemo(): ReactElement {
   const [chosen, setPlatform] = useState<PlatformId | null>(null);
   const detected = useSyncExternalStore(neverChanges, readerPlatform, () => "mac" as const);
   const platform = chosen ?? detected;
+  const [depth, setDepth] = useState(2);
   const [held, setHeld] = useState<ReadonlySet<string>>(() => new Set());
   const { query, setQuery, results, active, point, onInputKeyDown, attachList } =
     useShortcutSheet(GROUPS);
@@ -144,9 +146,15 @@ export function KeyboardDemo(): ReactElement {
             { value: "pc", label: "PC" },
           ]}
         />
+        <RangeControl label="Depth" value={depth} min={0} max={6} unit="px" onChange={setDepth} />
       </div>
 
-      <Keyboard board={board} trigger={trigger} className="kb-board" />
+      <Keyboard
+        board={board}
+        trigger={trigger}
+        className="kb-board"
+        style={{ "--cap-depth": `${String(depth)}px` } as Record<string, string>}
+      />
 
       <div className="kb-sheet">
         <input
