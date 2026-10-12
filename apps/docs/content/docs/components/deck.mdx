@@ -1,0 +1,181 @@
+---
+title: Deck
+description: A pile of index cards that deals out into a tabbed folder, flips between facets, and folds back, or rises as a sheet on a phone.
+---
+
+<Demo>
+  <DeckDemo />
+</Demo>
+
+Put away, the deck is a small tilted pile in the corner of the page. Press it, or press `i`, and it is
+**dealt**: the top card flies out and grows into a folder, and the side tabs slide out from under it
+one after another. Each tab flips the folder to its facet: the sheet swings a few degrees on its tab
+edge and the new contents rise into it. The ×, Escape or `i` again **puts it away**: the tabs tuck
+back in, and only then does the folder shrink back onto the pile.
+
+On a phone the same facets are a **sheet**: a modal dialog that rises from the foot of the screen,
+with the facets as pills inside it. A swipe down closes it.
+
+The package owns the flights, the flip, the tab list, the keys and the dialog. What the pile, the
+tabs, the sheet and the facets look like, and what each facet holds, is yours.
+
+## Anatomy
+
+```tsx
+import { Deck } from "@play-ui/react-deck";
+
+const FACETS = ["about", "notes", "links"];
+
+<Deck.Root values={FACETS} className="deck">
+  <Deck.Pile className="pile" aria-label="About this page, open the folder">
+    <span className="stub">3</span>
+    <Deck.PileCard className="card">6 min</Deck.PileCard>
+  </Deck.Pile>
+
+  <Deck.Folder className="folder" aria-label="About this page">
+    <Deck.Tabs className="tabs" aria-label="Facets">
+      <Deck.Tab value="about">About</Deck.Tab>
+      <Deck.Tab value="notes">Notes</Deck.Tab>
+      <Deck.Tab value="links">Links</Deck.Tab>
+    </Deck.Tabs>
+
+    <Deck.Surface className="sheet">
+      <Deck.Close aria-label="Put the folder away">×</Deck.Close>
+      <Deck.Panel value="about">…</Deck.Panel>
+      <Deck.Panel value="notes">…</Deck.Panel>
+      <Deck.Panel value="links">…</Deck.Panel>
+    </Deck.Surface>
+  </Deck.Folder>
+</Deck.Root>;
+```
+
+<Callout title="The one layout rule">
+  Hide the pile while the folder is out with `.pile[data-hidden] { visibility: hidden }`, never
+  `display: none`. The pile stays in the page so the put-away has a box to fly back to.
+</Callout>
+
+## The parts
+
+| Part            | Renders   | Description                                                                                                                                                                                              |
+| --------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Deck.Root`     | `div`     | Owns whether the deck is dealt, which facet is on top, the flights and the keys. Carries `data-phase`, `data-form`, `data-value`, `data-open` and `data-reduced-motion`.                                 |
+| `Deck.Pile`     | `button`  | Deals the deck onto the first facet. While the folder is out it carries `data-hidden`, `aria-hidden` and `inert`.                                                                                        |
+| `Deck.PileCard` | `span`    | The pile's top card: the box the folder leaves from and lands on. Without one, the pile itself is the card.                                                                                              |
+| `Deck.Folder`   | `div`     | In the page from the moment a deal starts until the put-away lands, with `data-phase`. A labelled `region` as a folder; a modal `dialog` as a sheet, where Tab wraps and Escape closes. Give it a label. |
+| `Deck.Surface`  | `div`     | The coloured sheet the facets are drawn on: what flies, what swings on a flip, and what a swipe down drags off as a sheet. `data-value` names the facet on top, for its fill.                            |
+| `Deck.Tabs`     | `div`     | The `tablist`. The arrow keys, Home and End move along it. Outside the sheet, every child slides out in turn as the deck is dealt.                                                                       |
+| `Deck.Tab`      | `button`  | One facet's `tab`, with `data-selected` on the one on top and `--deck-tab-index` for a stagger.                                                                                                          |
+| `Deck.Panel`    | `div`     | One facet's `tabpanel`, in the page only while it is on top.                                                                                                                                             |
+| `Deck.Close`    | `button`  | Puts the deck away. Give it a label.                                                                                                                                                                     |
+| `Deck.Backdrop` | `div`     | The sheet's scrim. A press on it puts the deck away.                                                                                                                                                     |
+| `Deck.Step`     | `section` | A step a facet opens in place, one layer nearer than the deck. Escape inside it calls `onClose` and stops there, so the step closes and the deck stays; a second Escape is the deck's. Needs no root.    |
+
+Every part takes `className`, as a string or a function of its state, and a `render` prop to swap
+its element, and ships no styles. See [Composition](/docs/handbook/composition).
+
+## Root props
+
+| Prop                                     | Default     | Description                                                                    |
+| ---------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| `values`                                 |             | The facets, in the order the tabs draw them and the number keys count them.    |
+| `value`, `defaultValue`, `onValueChange` | `values[0]` | The facet on top, controlled or not.                                           |
+| `open`, `defaultOpen`, `onOpenChange`    | `false`     | Whether the deck is dealt, controlled or not.                                  |
+| `form`                                   | `"folder"`  | `"folder"` beside the page, or `"sheet"` rising from the foot of the screen.   |
+| `keys`                                   | `true`      | Bind the deck's keys on the window.                                            |
+| `toggleKey`                              | `"i"`       | The key that deals the deck and puts it away; `null` binds none.               |
+| `listen`                                 | `false`     | Open when something calls `openDeck()`.                                        |
+| `motion`                                 |             | Tune the flights. See [Motion](#motion).                                       |
+| `reducedMotion`                          | `"system"`  | `"system"` follows the viewer's setting; `"always"` and `"never"` override it. |
+
+## Forms
+
+As a **folder** (the default) the deck sits beside the page: `Deck.Folder` is a labelled region, the
+page around it stays live, and the tabs fly out on their own down the sheet's edge.
+
+As a **sheet** it is a modal dialog: the page stops scrolling under it, Tab and Shift+Tab wrap
+inside it, and Escape, the backdrop or a swipe down closes it. Put the `Deck.Tabs` inside the
+`Deck.Surface` as pills; there they ride along with the sheet instead of flying on their own.
+
+```tsx
+<Deck.Root values={FACETS} form="sheet">
+  <Deck.Pile aria-label="About this page">…</Deck.Pile>
+  <Deck.Backdrop className="scrim" />
+  <Deck.Folder className="phone" aria-label="About this page">
+    <Deck.Surface className="sheet">
+      <Deck.Close aria-label="Close">×</Deck.Close>
+      <Deck.Tabs className="pills" aria-label="Facets">
+        …
+      </Deck.Tabs>
+      <Deck.Panel value="about">…</Deck.Panel>
+    </Deck.Surface>
+  </Deck.Folder>
+</Deck.Root>
+```
+
+Pick the form from a media query, and give the root a `key` of its form, so a folder never turns
+into a sheet mid-flight.
+
+The sheet's swipe is `swipeToDismiss(element, onDismiss)`, exported for any sheet of your own. A
+press stays a press until the finger has travelled a few pixels downward; a scroller that is not at
+its top scrolls first; and a drag past a quarter of the sheet's height, or a flick, closes it.
+Anything marked `data-swipe-ignore` never starts a drag.
+
+## Keys
+
+With `keys` on, outside a field, without a modifier and while no other modal dialog is open:
+
+| Key        | Does                                                         |
+| ---------- | ------------------------------------------------------------ |
+| `i`        | Deals the deck or puts it away. Change it with `toggleKey`.  |
+| Escape     | Puts it away.                                                |
+| `1` to `9` | Flips to that facet, dealing the deck first when it is away. |
+| Arrows     | Move along the tabs and flip as they go, with Home and End.  |
+
+A key something else already handled with `preventDefault()`, as `Deck.Step` does with its Escape,
+is left alone. `deckKeyAction(event, values, open, toggleKey)` is the same decision as a pure
+function.
+
+Focus moves onto the selected tab when the deck is dealt, and back to where it came from when it is
+put away, if it was inside the folder.
+
+## Opening from elsewhere
+
+A root with `listen` opens when anything on the page calls `openDeck()`, on a facet when one is
+named. A menu item or an action bar can open the deck without importing it:
+
+```tsx
+import { openDeck } from "@play-ui/react-deck";
+
+<button onClick={() => openDeck("notes")}>Notes</button>;
+```
+
+It dispatches `play-ui:open-deck` (`OPEN_DECK_EVENT`) on the window.
+
+## Motion
+
+Every flight is a set of Web Animations the root waits on; nothing is stepped from JavaScript. The
+sheet is never resized: it moves on one uniform scale, and a `clip-path` cuts it to the card's box
+with the card's own corners, so its corners stay round the whole way and no frame is laid out. The
+clip opens past the sheet's edges just before it lands, so its shadow grows in under it.
+
+The springs are sampled into CSS `linear()` easings with `springTiming` from
+[`@play-ui/physics`](/docs/utilities/physics), so the compositor runs them.
+
+| Option       | Default                        | Meaning                                    |
+| ------------ | ------------------------------ | ------------------------------------------ |
+| `deal`       | stiffness 170, damping 20      | The folder out of the pile, about 500ms.   |
+| `putAway`    | stiffness 260, damping 26      | The folder back onto it, about 390ms.      |
+| `flip`       | stiffness 320, damping 28, 0.9 | A facet flipping in.                       |
+| `pileTilt`   | `-1.5`                         | Degrees the top card is turned by.         |
+| `tabStagger` | `32`                           | Milliseconds between one tab and the next. |
+| `flipAngle`  | `7`                            | Degrees the sheet swings on a flip.        |
+| `flipTravel` | `10`                           | Pixels the new contents rise.              |
+| `fade`       | `140`                          | The cross-fade that replaces all of it.    |
+
+```tsx
+<Deck.Root values={FACETS} motion={{ tabStagger: 0, flipAngle: 4 }}>
+```
+
+Under reduced motion, from the viewer's setting or `reducedMotion="always"`, every flight is a
+cross-fade of `fade` milliseconds. `pileTransform`, `pileClip`, `pileFlight`, `putAwayTimeline` and
+`flipDirection` are the pure geometry, exported for tests and for flights of your own.

@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 
 import { CardStackDemo } from "@/components/demos/card-stack-demo.tsx";
+import { DeckDemo } from "@/components/demos/deck-demo.tsx";
 import { KeyboardDemo } from "@/components/demos/keyboard-demo.tsx";
 
 /** Live examples, shown in a framed panel above their source. */
@@ -20,6 +21,7 @@ function Callout(props: { title?: string; children: React.ReactNode }): React.Re
 
 export const mdxComponents: MDXComponents = {
   CardStackDemo,
+  DeckDemo,
   KeyboardDemo,
   Demo,
   Callout,
