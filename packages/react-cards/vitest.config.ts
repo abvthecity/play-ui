@@ -13,14 +13,14 @@ const config: ViteUserConfig = defineConfig({
         test: {
           name: "node",
           environment: "node",
-          include: ["test/*.test.ts"],
+          include: ["src/**/*.test.ts"],
         },
       },
       {
         extends: true,
         test: {
           name: "browser",
-          include: ["test/browser/*.test.tsx"],
+          include: ["src/**/*.browser.test.tsx"],
           browser: {
             enabled: true,
             headless: true,

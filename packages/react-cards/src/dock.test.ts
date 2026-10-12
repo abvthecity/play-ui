@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+
 import {
   dockAt,
   isDockPlace,
@@ -7,8 +9,7 @@ import {
   stepPlace,
   tuckedSide,
   untuck,
-} from "@play-ui/react-cards";
-import { describe, expect, it } from "vitest";
+} from "./dock.ts";
 
 /** Where a dragged stack lands along the foot of the page: a third of the viewport each. */
 describe("dockAt", () => {

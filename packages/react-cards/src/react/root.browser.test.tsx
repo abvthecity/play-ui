@@ -1,3 +1,7 @@
+import { Fragment, StrictMode, useEffect, useRef, useState, type ReactElement } from "react";
+import { describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-react";
+
 import {
   CardStack,
   type CardStackActions,
@@ -5,10 +9,7 @@ import {
   type CardStackOptions,
   type CardStackSwipeDetails,
   type SwipeEffects,
-} from "@play-ui/react-cards";
-import { Fragment, StrictMode, useEffect, useRef, useState, type ReactElement } from "react";
-import { describe, expect, it, vi } from "vitest";
-import { render } from "vitest-browser-react";
+} from "../index.ts";
 
 /**
  * `@play-ui/react-cards` in a real browser: the parts' data attributes, the

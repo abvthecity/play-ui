@@ -1,5 +1,6 @@
-import { flipTransform, staggerDelay } from "@play-ui/react-cards";
 import { describe, expect, it } from "vitest";
+
+import { flipTransform, staggerDelay } from "./morph.ts";
 
 /** The morph between two layouts of the same cards: when each one goes, and from where. */
 describe("staggerDelay", () => {

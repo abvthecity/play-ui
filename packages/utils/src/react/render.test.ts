@@ -1,49 +1,7 @@
 import { createElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  clamp,
-  lerp,
-  mergeProps,
-  mergeRefs,
-  prefersReducedMotion,
-  renderPart,
-} from "../src/index.ts";
-
-describe("clamp and lerp", () => {
-  it("holds a value between its bounds", () => {
-    expect(clamp(-1, 0, 1)).toBe(0);
-    expect(clamp(0.5, 0, 1)).toBe(0.5);
-    expect(clamp(2, 0, 1)).toBe(1);
-  });
-
-  it("interpolates between two numbers", () => {
-    expect(lerp(10, 20, 0)).toBe(10);
-    expect(lerp(10, 20, 0.25)).toBe(12.5);
-    expect(lerp(10, 20, 1)).toBe(20);
-  });
-});
-
-describe("prefersReducedMotion", () => {
-  it("follows an explicit mode", () => {
-    expect(prefersReducedMotion("always")).toBe(true);
-    expect(prefersReducedMotion("never")).toBe(false);
-  });
-
-  it("does not reduce without a window", () => {
-    expect(prefersReducedMotion("system")).toBe(false);
-  });
-
-  it("asks the system when there is one", () => {
-    vi.stubGlobal("window", { matchMedia: () => ({ matches: true }) });
-
-    try {
-      expect(prefersReducedMotion()).toBe(true);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-});
+import { mergeProps, mergeRefs, renderPart } from "./render.ts";
 
 describe("mergeProps", () => {
   it("lays the consumer's props over the part's own, dropping undefined", () => {

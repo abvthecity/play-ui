@@ -1,3 +1,5 @@
+import { describe, expect, expectTypeOf, it } from "vitest";
+
 import {
   CardStack,
   createCardStack,
@@ -5,8 +7,7 @@ import {
   type CardStackApi,
   type CardStackCardsProps,
   type CardStackRootProps,
-} from "@play-ui/react-cards";
-import { describe, expect, expectTypeOf, it } from "vitest";
+} from "../index.ts";
 
 interface Link {
   id: string;
