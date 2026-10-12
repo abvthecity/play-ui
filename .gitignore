@@ -1,2 +1,32 @@
+# dependencies
 node_modules/
 .pnpm-store/
+
+# build output
+dist/
+.output/
+.nitro/
+.tanstack/
+.vinxi/
+.source/
+
+# testing
+coverage/
+test-results/
+playwright-report/
+__screenshots__/
+
+# typescript
+*.tsbuildinfo
+
+# turborepo
+.turbo/
+
+# misc
+.DS_Store
+*.pem
+.env*
+!.env.example
+
+# agent worktrees
+.claude/worktrees/

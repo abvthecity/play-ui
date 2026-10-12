@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "sortImports": true,
+  "sortPackageJson": true,
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.output/**",
+    "**/.turbo/**",
+    "**/.tanstack/**",
+    "**/.source/**",
+    "**/routeTree.gen.ts",
+    "pnpm-lock.yaml"
+  ]
+}

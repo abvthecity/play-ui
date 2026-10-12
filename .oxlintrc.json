@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "typescript", "oxc", "import", "react", "jsx-a11y"],
+  "jsPlugins": ["@stylistic/eslint-plugin"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "typescript/consistent-type-imports": "error",
+    "eslint/prefer-const": "error",
+    "react/exhaustive-deps": "error",
+    "react/rules-of-hooks": "error",
+    "@stylistic/padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": "*", "next": "function" },
+      { "blankLine": "always", "prev": "function", "next": "*" },
+      { "blankLine": "always", "prev": "*", "next": "export" },
+      { "blankLine": "always", "prev": "export", "next": "*" }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "eslint/no-await-in-loop": "off",
+    "unicorn/no-array-sort": "off",
+    "oxc/no-map-spread": "off",
+    "react/exhaustive-effect-dependencies": "off",
+    "react/incompatible-library": "off",
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "eslint/complexity": "error",
+    "eslint/no-underscore-dangle": ["error", { "allow": ["_splat"] }]
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.output/**",
+    "**/.turbo/**",
+    "**/.tanstack/**",
+    "**/.source/**",
+    "**/routeTree.gen.ts"
+  ],
+  "env": { "browser": true, "node": true },
+  "options": { "typeAware": true }
+}
